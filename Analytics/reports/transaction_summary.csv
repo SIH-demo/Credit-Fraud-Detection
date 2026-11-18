@@ -1,0 +1,6 @@
+metric,value
+total_transactions,6.0
+legitimate_transactions,4.0
+fraudulent_transactions,2.0
+fraud_rate_percent,33.33
+average_amount,3105.0
