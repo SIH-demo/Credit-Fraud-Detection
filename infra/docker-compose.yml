@@ -1,0 +1,97 @@
+services:
+
+  mysql:
+    image: mysql:8.0-oracle
+    container_name: cfd-mysql
+
+    restart: unless-stopped
+
+    environment:
+      MYSQL_DATABASE: fraud_detection
+      MYSQL_USER: cfd_user
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_app_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+
+    secrets:
+      - mysql_app_password
+      - mysql_root_password
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    networks:
+      - cfd-network
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'mysqladmin ping -h 127.0.0.1 -uroot --password="$$(cat /run/secrets/mysql_root_password)"'
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+
+    image: cfd-backend:v1
+    container_name: cfd-backend
+
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/fraud_detection
+      DB_USERNAME: cfd_user
+
+    secrets:
+      - mysql_app_password
+
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - 'export DB_PASSWORD="$$(cat /run/secrets/mysql_app_password)" && exec java -jar app.jar'
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - cfd-network
+  
+  frontend:
+    build:
+      context: ..
+      dockerfile: infra/docker/frontend.Dockerfile
+
+    image: cfd-frontend:v1
+    container_name: cfd-frontend
+
+    restart: unless-stopped
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - cfd-network
+
+networks:
+  cfd-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+
+
+secrets:
+  mysql_app_password:
+    file: ./docker/secrets/mysql_app_password.txt
+
+  mysql_root_password:
+    file: ./docker/secrets/mysql_root_password.txt
