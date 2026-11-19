@@ -1,11 +1,29 @@
 
-from fastapi import FastAPI
+from typing import Dict, Any, Optional
+from uuid import uuid4
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+
 
 app = FastAPI(
-    title="Credit Card Fraud Detection ML Service",
-    version="0.1.0",
-    description="ML service for fraud detection"
+    title="CreditGuard ML Service",
+    version="1.0.0",
+    description="Internal machine learning service for fraud detection",
 )
+
+
+class PredictionRequest(BaseModel):
+    transaction_id: str
+    features: Dict[str, Any]
+    correlation_id: Optional[str] = None
+
+
+@app.get("/")
+def root():
+    return {
+        "message": "CreditGuard ML Service is running"
+    }
 
 
 @app.get("/health")
@@ -16,8 +34,15 @@ def health():
     }
 
 
-@app.get("/")
-def root():
-    return {
-        "message": "Credit Fraud Detection ML Service is running"
-    }
+@app.post("/internal/v1/predict")
+def predict(request: PredictionRequest):
+
+    raise HTTPException(
+        status_code=503,
+        detail={
+            "error": "MODEL_NOT_AVAILABLE",
+            "message": "No trained fraud detection model is configured yet.",
+            "transaction_id": request.transaction_id,
+            "correlation_id": request.correlation_id or str(uuid4()),
+        },
+    )
