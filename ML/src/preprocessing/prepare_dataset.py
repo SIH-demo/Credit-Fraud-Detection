@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -11,18 +10,14 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 df = pd.read_csv(RAW_PATH)
 
-# Clean text columns
 for col in df.select_dtypes(include="str").columns:
     df[col] = df[col].str.strip().str.strip("'\"")
 
-# Remove identifier and constant location columns
 df.drop(columns=["customer", "zipcodeOri", "zipMerchant"], inplace=True)
 
-# Separate features and target
 X = df.drop(columns=["fraud"])
 y = df["fraud"]
 
-# Stratified 80:20 split
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
@@ -31,11 +26,9 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-# Save datasets
 X_train.assign(fraud=y_train).to_csv(OUTPUT_DIR / "train.csv", index=False)
 X_test.assign(fraud=y_test).to_csv(OUTPUT_DIR / "test.csv", index=False)
 
-print("Dataset preparation completed!")
 print("Training rows:", len(X_train))
 print("Testing rows:", len(X_test))
 print("Training fraud cases:", int(y_train.sum()))

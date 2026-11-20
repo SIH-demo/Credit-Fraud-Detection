@@ -9,8 +9,6 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
-
-# Configuration
 BASE_DIR = Path(__file__).resolve().parents[1]
 
 MODEL_PATH = BASE_DIR / "models" / "fraud_detection_tuned_model.pkl"
@@ -35,8 +33,6 @@ app = FastAPI(
     description="Internal machine learning service for fraud detection",
 )
 
-
-# Request schema
 class PredictionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -44,8 +40,6 @@ class PredictionRequest(BaseModel):
     features: dict[str, Any]
     correlation_id: Optional[str] = None
 
-
-# Response schema
 class PredictionResponse(BaseModel):
     transaction_id: str
     prediction: int
@@ -55,8 +49,6 @@ class PredictionResponse(BaseModel):
     correlation_id: str
     explanation: dict[str, Any]
 
-
-# Load model once
 def get_model():
     global _model
 
@@ -84,8 +76,6 @@ def get_model():
 
     return _model
 
-
-# Validate transaction features
 def prepare_features(features: dict):
     missing = set(FEATURE_COLUMNS) - set(features)
     extra = set(features) - set(FEATURE_COLUMNS)
@@ -132,8 +122,6 @@ def prepare_features(features: dict):
             },
         )
 
-
-# Root endpoint
 @app.get("/")
 def root():
     return {
@@ -143,8 +131,6 @@ def root():
         "prediction_threshold": PREDICTION_THRESHOLD,
     }
 
-
-# Health endpoint
 @app.get("/health")
 def health():
     try:
@@ -166,8 +152,6 @@ def health():
             "model_version": MODEL_VERSION,
         }
 
-
-# Fraud prediction endpoint
 @app.post(
     "/internal/v1/predict",
     response_model=PredictionResponse,
@@ -180,12 +164,10 @@ def predict(request: PredictionRequest):
     transaction = prepare_features(request.features)
 
     try:
-        # Get fraud probability
         risk_score = float(
             model.predict_proba(transaction)[0][1]
         )
 
-        # Apply selected validation threshold
         prediction = int(
             risk_score >= PREDICTION_THRESHOLD
         )
@@ -201,7 +183,6 @@ def predict(request: PredictionRequest):
             },
         )
 
-    # Risk classification
     if risk_score < 0.30:
         risk_level = "LOW"
 

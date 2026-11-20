@@ -18,13 +18,11 @@ DATA_DIR = BASE_DIR / "data" / "processed"
 MODEL_DIR = BASE_DIR / "models"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-# 1. Load the original training dataset
 df = pd.read_csv(DATA_DIR / "train.csv")
 
 X = df.drop(columns=["fraud"])
 y = df["fraud"]
 
-# 2. Split before tuning
 X_train, X_val, y_train, y_val = train_test_split(
     X,
     y,
@@ -33,7 +31,6 @@ X_train, X_val, y_train, y_val = train_test_split(
     stratify=y
 )
 
-# Save the untouched validation portion
 validation_df = X_val.copy()
 validation_df["fraud"] = y_val
 validation_df.to_csv(DATA_DIR / "validation.csv", index=False)
@@ -43,7 +40,6 @@ print("Validation samples:", len(X_val))
 print("Training fraud cases:", int(y_train.sum()))
 print("Validation fraud cases:", int(y_val.sum()))
 
-# 3. Identify feature types using training data only
 categorical = X_train.select_dtypes(include="str").columns.tolist()
 numerical = X_train.select_dtypes(include="number").columns.tolist()
 
@@ -52,7 +48,6 @@ preprocessor = ColumnTransformer([
     ("numerical", StandardScaler(), numerical)
 ])
 
-# 4. Build pipeline
 pipeline = Pipeline([
     ("preprocessor", preprocessor),
     ("classifier", RandomForestClassifier(
@@ -61,7 +56,6 @@ pipeline = Pipeline([
     ))
 ])
 
-# 5. Hyperparameter search
 param_distributions = {
     "classifier__n_estimators": [100, 150, 200],
     "classifier__max_depth": [20, 30, None],
@@ -92,19 +86,15 @@ search = RandomizedSearchCV(
 
 print("\nStarting leakage-free Random Forest tuning...")
 
-# Important: only X_train is passed to the search
 search.fit(X_train, y_train)
 
-# 6. Save the best model
 best_model = search.best_estimator_
 
 MODEL_PATH = MODEL_DIR / "fraud_detection_tuned_model.pkl"
 joblib.dump(best_model, MODEL_PATH)
 
-print("\n===== RANDOM FOREST TUNING RESULTS =====")
 print("Best CV PR-AUC:", round(search.best_score_, 4))
 print("Best parameters:")
 print(search.best_params_)
 
-print("\nTuned model saved successfully.")
 print("Path:", MODEL_PATH)
