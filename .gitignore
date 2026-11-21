@@ -68,3 +68,7 @@ playwright-report/
 *.sqlite3
 *.dump
 *.bak
+
+request.json
+invalid-request.json
+ML/data/
