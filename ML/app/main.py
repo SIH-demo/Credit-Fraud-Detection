@@ -4,7 +4,9 @@ from typing import Any, Optional
 from uuid import uuid4
 
 import joblib
+import numpy as np
 import pandas as pd
+import shap
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
@@ -26,6 +28,7 @@ FEATURE_COLUMNS = [
 ]
 
 _model = None
+_explainer = None
 
 app = FastAPI(
     title="CreditGuard ML Service",
@@ -33,12 +36,14 @@ app = FastAPI(
     description="Internal machine learning service for fraud detection",
 )
 
+
 class PredictionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     transaction_id: str = Field(min_length=1)
     features: dict[str, Any]
     correlation_id: Optional[str] = None
+
 
 class PredictionResponse(BaseModel):
     transaction_id: str
@@ -48,6 +53,7 @@ class PredictionResponse(BaseModel):
     model_version: str
     correlation_id: str
     explanation: dict[str, Any]
+
 
 def get_model():
     global _model
@@ -75,6 +81,18 @@ def get_model():
             )
 
     return _model
+
+
+def get_explainer():
+    global _explainer
+
+    if _explainer is None:
+        model = get_model()
+        classifier = model.named_steps["classifier"]
+        _explainer = shap.TreeExplainer(classifier)
+
+    return _explainer
+
 
 def prepare_features(features: dict):
     missing = set(FEATURE_COLUMNS) - set(features)
@@ -122,6 +140,71 @@ def prepare_features(features: dict):
             },
         )
 
+
+def explain_prediction(model, transaction):
+    preprocessor = model.named_steps["preprocessor"]
+
+    transformed = preprocessor.transform(transaction)
+
+    if hasattr(transformed, "toarray"):
+        transformed = transformed.toarray()
+
+    transformed = np.asarray(transformed, dtype=np.float64)
+
+    explainer = get_explainer()
+    shap_values = explainer.shap_values(transformed)
+
+    # Binary classification: class 1 represents fraud.
+    contributions = shap_values[0, :, 1]
+
+    feature_names = preprocessor.get_feature_names_out()
+
+    original_features = {
+        feature: 0.0 for feature in FEATURE_COLUMNS
+    }
+
+    for name, contribution in zip(feature_names, contributions):
+        original_name = name.split("__", 1)[-1]
+
+        # Aggregate one-hot encoded contributions.
+        if original_name.startswith("age_"):
+            original_name = "age"
+
+        elif original_name.startswith("gender_"):
+            original_name = "gender"
+
+        elif original_name.startswith("merchant_"):
+            original_name = "merchant"
+
+        elif original_name.startswith("category_"):
+            original_name = "category"
+
+        original_features[original_name] += float(contribution)
+
+    top_features = sorted(
+        original_features.items(),
+        key=lambda item: abs(item[1]),
+        reverse=True,
+    )[:5]
+
+    return [
+        {
+            "feature": feature,
+            "contribution": round(contribution, 6),
+            "impact": (
+                "increases_fraud_risk"
+                if contribution > 0
+                else (
+                    "decreases_fraud_risk"
+                    if contribution < 0
+                    else "neutral"
+                )
+            ),
+        }
+        for feature, contribution in top_features
+    ]
+
+
 @app.get("/")
 def root():
     return {
@@ -130,6 +213,7 @@ def root():
         "model": "Tuned Random Forest",
         "prediction_threshold": PREDICTION_THRESHOLD,
     }
+
 
 @app.get("/health")
 def health():
@@ -152,6 +236,7 @@ def health():
             "model_version": MODEL_VERSION,
         }
 
+
 @app.post(
     "/internal/v1/predict",
     response_model=PredictionResponse,
@@ -171,6 +256,8 @@ def predict(request: PredictionRequest):
         prediction = int(
             risk_score >= PREDICTION_THRESHOLD
         )
+
+        top_features = explain_prediction(model, transaction)
 
     except Exception:
         raise HTTPException(
@@ -200,6 +287,6 @@ def predict(request: PredictionRequest):
         model_version=MODEL_VERSION,
         correlation_id=correlation_id,
         explanation={
-            "top_features": []
+            "top_features": top_features
         },
     )
