@@ -1,0 +1,196 @@
+/* ==========================================
+   CreditGuard - Authentication Styles
+   File: Frontend/auth/auth.css
+   ========================================== */
+
+/* Global reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f1f5f9;
+    color: #172b4d;
+}
+
+/* Authentication container */
+.auth-container,
+.login-container,
+.register-container {
+    width: 100%;
+    max-width: 440px;
+    padding: 35px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* Logo and heading */
+.logo {
+    text-align: center;
+    color: #173b68;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 28px;
+}
+
+h1,
+h2 {
+    text-align: center;
+    color: #172b4d;
+    margin-bottom: 22px;
+    font-size: 23px;
+}
+
+/* Form groups */
+.form-group {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Input fields */
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #172b4d;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+input::placeholder {
+    color: #94a3b8;
+}
+
+/* Primary button */
+button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+button:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+}
+
+/* Message area */
+.message {
+    display: none;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Links */
+.auth-link,
+.login-link,
+.register-link {
+    margin-top: 22px;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+}
+
+a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Forgot password */
+.forgot-password {
+    display: block;
+    margin-top: 10px;
+    text-align: right;
+    font-size: 13px;
+}
+
+/* Remember me */
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #475569;
+}
+
+.remember-me input {
+    width: auto;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    body {
+        padding: 14px;
+    }
+
+    .auth-container,
+    .login-container,
+    .register-container {
+        padding: 25px 20px;
+    }
+
+    .logo {
+        font-size: 25px;
+    }
+
+    h1,
+    h2 {
+        font-size: 21px;
+    }
+}

@@ -1,0 +1,473 @@
+
+/* =========================================
+   CREDITGUARD - TRANSACTIONS CSS
+   File: Frontend/transactions/transactions.css
+========================================= */
+
+/* ---------- Transaction Page ---------- */
+
+.transactions-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.page-header p {
+    color: var(--muted-color);
+    margin-top: 5px;
+}
+
+/* ---------- Transaction Header ---------- */
+
+.transaction-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.transaction-heading h2 {
+    font-size: 21px;
+    margin-bottom: 5px;
+}
+
+.transaction-heading p {
+    color: var(--muted-color);
+    font-size: 13px;
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-large);
+    padding: 22px;
+    margin-bottom: 22px;
+    box-shadow: var(--card-shadow);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 12px;
+}
+
+.card-header h2 {
+    font-size: 18px;
+}
+
+/* ---------- Transaction Statistics ---------- */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.stat-card {
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-large);
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+}
+
+.stat-card p {
+    color: var(--muted-color);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.stat-card h2 {
+    font-size: 23px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Details Grid ---------- */
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 20px;
+}
+
+.detail-item {
+    min-width: 0;
+}
+
+.detail-item label {
+    display: block;
+    color: var(--muted-color);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+.detail-item p {
+    color: var(--heading-color);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Prediction Summary ---------- */
+
+.prediction-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.risk-result {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-medium);
+    padding: 18px;
+}
+
+.risk-result label {
+    display: block;
+    color: var(--muted-color);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.risk-result h2 {
+    font-size: 21px;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Risk Colors ---------- */
+
+.risk-low {
+    color: var(--success-color) !important;
+}
+
+.risk-medium {
+    color: var(--warning-color) !important;
+}
+
+.risk-high {
+    color: var(--danger-color) !important;
+}
+
+/* ---------- Progress Bar ---------- */
+
+.progress-section {
+    margin: 25px 0;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.progress-track {
+    width: 100%;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0;
+    height: 100%;
+    background: var(--success-color);
+    border-radius: 20px;
+    transition: width 0.4s ease;
+}
+
+.progress-fill.medium {
+    background: var(--warning-color);
+}
+
+.progress-fill.high {
+    background: var(--danger-color);
+}
+
+/* ---------- Status Badges ---------- */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-info {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.badge-neutral {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* ---------- Transaction Filters ---------- */
+
+.transaction-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.transaction-filters input,
+.transaction-filters select {
+    min-width: 160px;
+    padding: 10px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-small);
+    background: #fff;
+    color: var(--text-color);
+    outline: none;
+}
+
+.transaction-filters input:focus,
+.transaction-filters select:focus {
+    border-color: var(--primary-color);
+}
+
+/* ---------- Transaction Table ---------- */
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+}
+
+table th {
+    background: #f8fafc;
+    color: var(--muted-color);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+table td {
+    padding: 14px 12px;
+    font-size: 13px;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+table tbody tr:hover {
+    background: #f8fafc;
+}
+
+table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ---------- Action Buttons ---------- */
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: var(--heading-color);
+}
+
+/* ---------- Information Note ---------- */
+
+.info-note {
+    padding: 13px 15px;
+    margin-top: 20px;
+    background: #eff6ff;
+    border-left: 4px solid var(--info-color);
+    border-radius: 5px;
+    color: #1e40af;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* ---------- Alert Messages ---------- */
+
+.alert {
+    padding: 12px 16px;
+    border-radius: var(--radius-small);
+    margin-bottom: 18px;
+    font-size: 13px;
+}
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* ---------- Empty and Loading States ---------- */
+
+.empty-state {
+    text-align: center;
+    padding: 35px 20px;
+    color: var(--muted-color);
+}
+
+.loading-state {
+    text-align: center;
+    padding: 25px;
+    color: var(--muted-color);
+}
+
+/* ---------- Footer ---------- */
+
+.page-footer {
+    text-align: center;
+    padding: 22px 10px;
+    margin-top: 20px;
+    color: var(--muted-color);
+    font-size: 12px;
+}
+
+/* ---------- Responsive Design ---------- */
+
+@media (max-width: 1000px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .details-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .prediction-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 17px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .transaction-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+    }
+
+    .page-header .btn {
+        width: 100%;
+    }
+}

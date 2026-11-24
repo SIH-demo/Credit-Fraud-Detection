@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Transactions | CreditGuard</title>
+
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="../shared/css/style.css">
+    <link rel="stylesheet" href="../shared/css/layout.css">
+    <link rel="stylesheet" href="../shared/css/components.css">
+
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="transactions.css">
+</head>
+
+<body>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+            <h2>CreditGuard</h2>
+            <p>Fraud Detection System</p>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a href="../dashboard/dashboard.html" class="nav-link">
+                Dashboard
+            </a>
+
+            <a href="transactions.html" class="nav-link active">
+                Transactions
+            </a>
+
+            <a href="../predictions/prediction.html" class="nav-link">
+                Fraud Prediction
+            </a>
+
+            <a href="../batch-analysis/batch-analysis.html" class="nav-link">
+                Batch Analysis
+            </a>
+
+            <a href="../investigations/investigations.html" class="nav-link">
+                Investigations
+            </a>
+
+            <a href="../model-analytics/model-analytics.html" class="nav-link">
+                Model Analytics
+            </a>
+
+            <a href="../reports/reports.html" class="nav-link">
+                Reports
+            </a>
+
+            <a href="../settings/settings.html" class="nav-link">
+                Settings
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <button type="button" class="logout-button">
+                Logout
+            </button>
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+
+        <!-- Topbar -->
+
+        <header class="topbar">
+
+            <button
+                type="button"
+                class="sidebar-toggle"
+                aria-label="Open navigation"
+                aria-expanded="false">
+                ☰
+            </button>
+
+            <div>
+                <h3>Transactions</h3>
+                <p>Monitor and analyze transaction activity</p>
+            </div>
+
+            <div class="user-profile">
+                <span data-user-name>User</span>
+                <small data-user-role>Role</small>
+            </div>
+
+        </header>
+
+
+        <section class="page-content">
+
+            <!-- ================= PAGE HEADER ================= -->
+
+            <div class="page-header">
+
+                <div>
+                    <h1>Transaction Management</h1>
+                    <p>
+                        View, search and monitor all processed transactions.
+                    </p>
+                </div>
+
+                <a
+                    href="../predictions/prediction.html"
+                    class="btn btn-primary">
+                    + New Prediction
+                </a>
+
+            </div>
+
+
+            <!-- ================= MESSAGE ================= -->
+
+            <div
+                id="transactionMessage"
+                class="alert"
+                role="status"
+                aria-live="polite"
+                hidden>
+            </div>
+
+
+            <!-- ================= STATISTICS ================= -->
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+                    <p>Total Transactions</p>
+                    <h2 id="totalTransactions">--</h2>
+                </div>
+
+                <div class="stat-card">
+                    <p>Fraud Detected</p>
+                    <h2 id="fraudTransactions">--</h2>
+                </div>
+
+                <div class="stat-card">
+                    <p>Low Risk</p>
+                    <h2 id="lowRiskTransactions">--</h2>
+                </div>
+
+                <div class="stat-card">
+                    <p>High Risk</p>
+                    <h2 id="highRiskTransactions">--</h2>
+                </div>
+
+            </section>
+
+
+            <!-- ================= TRANSACTION TABLE ================= -->
+
+            <section class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Transaction History</h2>
+                        <p>Search and filter transaction records.</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="refreshTransactions"
+                        class="btn btn-secondary">
+                        Refresh
+                    </button>
+
+                </div>
+
+
+                <!-- Filters -->
+
+                <div class="transaction-filters">
+
+                    <input
+                        type="search"
+                        id="transactionSearch"
+                        placeholder="Search transaction ID, merchant..."
+                        aria-label="Search transactions">
+
+                    <select id="riskFilter" aria-label="Filter by risk">
+                        <option value="">All Risk Levels</option>
+                        <option value="LOW">Low Risk</option>
+                        <option value="MEDIUM">Medium Risk</option>
+                        <option value="HIGH">High Risk</option>
+                    </select>
+
+                    <select id="statusFilter" aria-label="Filter by status">
+                        <option value="">All Statuses</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="FAILED">Failed</option>
+                    </select>
+
+                    <select id="currencyFilter" aria-label="Filter by currency">
+                        <option value="">All Currencies</option>
+                        <option value="INR">INR</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                    </select>
+
+                    <button
+                        type="button"
+                        id="clearFilters"
+                        class="btn btn-secondary">
+                        Clear Filters
+                    </button>
+
+                </div>
+
+
+                <!-- Table -->
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Merchant</th>
+                                <th>Amount</th>
+                                <th>Date & Time</th>
+                                <th>Risk Score</th>
+                                <th>Risk Level</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="transactionsTableBody">
+
+                            <tr>
+                                <td colspan="8" class="loading-state">
+                                    Loading transactions...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Pagination -->
+
+                <div class="pagination">
+
+                    <p id="paginationInfo">
+                        Showing 0 transactions
+                    </p>
+
+                    <div class="pagination-buttons">
+
+                        <button
+                            type="button"
+                            id="previousPage"
+                            class="btn btn-secondary"
+                            disabled>
+                            Previous
+                        </button>
+
+                        <button
+                            type="button"
+                            id="nextPage"
+                            class="btn btn-secondary"
+                            disabled>
+                            Next
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================= FOOTER ================= -->
+
+            <footer class="page-footer">
+                <p>
+                    © 2026 CreditGuard | Fraud Detection System
+                </p>
+            </footer>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= SCRIPTS ================= -->
+
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/session.js"></script>
+    <script src="../shared/js/navigation.js"></script>
+    <script src="../app.js"></script>
+
+    <script src="transactions.js"></script>
+
+</body>
+</html>

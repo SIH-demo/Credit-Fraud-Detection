@@ -1,11 +1,414 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+
+    <title>Fraud Prediction | CreditGuard</title>
+
+    <link rel="stylesheet" href="prediction.css">
+    <link rel="stylesheet" href="../shared/css/components.css">
+    <link rel="stylesheet" href="../shared/css/layout.css">
+    <link rel="stylesheet" href="../shared/css/style.css">
 </head>
+
 <body>
-    This is Prediction page
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <h2>CreditGuard</h2>
+            <span>Fraud Detection System</span>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="../dashboard/dashboard.html">Dashboard</a>
+            <a href="../transactions/transactions.html">Transactions</a>
+            <a href="prediction.html" class="active">Fraud Prediction</a>
+            <a href="../batch-analysis/batch-analysis.html">Batch Analysis</a>
+            <a href="../investigations/investigations.html">Investigations</a>
+            <a href="../model-analytics/model-analytics.html">Model Analytics</a>
+            <a href="../reports/reports.html">Reports</a>
+            <a href="../settings/settings.html">Settings</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>CreditGuard v1.0</p>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+
+            <div>
+                <h1>Fraud Prediction</h1>
+                <p>Analyze a transaction and identify potential fraud risk</p>
+            </div>
+
+            <div class="topbar-actions">
+                <span class="user-name">Analyst</span>
+            </div>
+
+        </header>
+
+
+        <!-- MESSAGE -->
+        <div id="pageMessage"
+             class="page-message"
+             role="status"
+             aria-live="polite">
+        </div>
+
+
+        <!-- PREDICTION FORM -->
+        <section class="section">
+
+            <div class="section-header">
+                <div>
+                    <h2>Transaction Details</h2>
+                    <p>Enter transaction information for fraud analysis</p>
+                </div>
+            </div>
+
+
+            <div class="prediction-layout">
+
+                <div class="prediction-form-card">
+
+                    <form id="predictionForm">
+
+                        <div class="form-grid">
+
+                            <!-- Transaction Reference -->
+                            <div class="form-group">
+                                <label for="externalReference">
+                                    Transaction Reference
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="externalReference"
+                                    name="externalReference"
+                                    placeholder="Enter transaction reference"
+                                    maxlength="100"
+                                >
+                            </div>
+
+
+                            <!-- Amount -->
+                            <div class="form-group">
+                                <label for="amount">
+                                    Transaction Amount *
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="amount"
+                                    name="amount"
+                                    placeholder="Enter amount"
+                                    min="0.01"
+                                    step="0.01"
+                                    required
+                                >
+                            </div>
+
+
+                            <!-- Currency -->
+                            <div class="form-group">
+                                <label for="currency">
+                                    Currency *
+                                </label>
+
+                                <select id="currency" name="currency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="INR">INR</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                </select>
+                            </div>
+
+
+                            <!-- Transaction Time -->
+                            <div class="form-group">
+                                <label for="transactionTime">
+                                    Transaction Date & Time *
+                                </label>
+
+                                <input
+                                    type="datetime-local"
+                                    id="transactionTime"
+                                    name="transactionTime"
+                                    required
+                                >
+                            </div>
+
+
+                            <!-- Merchant -->
+                            <div class="form-group">
+                                <label for="merchant">
+                                    Merchant *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="merchant"
+                                    name="merchant"
+                                    placeholder="Enter merchant name"
+                                    maxlength="150"
+                                    required
+                                >
+                            </div>
+
+
+                            <!-- Country -->
+                            <div class="form-group">
+                                <label for="country">
+                                    Country *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="country"
+                                    name="country"
+                                    placeholder="Enter country"
+                                    maxlength="100"
+                                    required
+                                >
+                            </div>
+
+
+                            <!-- Masked Card -->
+                            <div class="form-group">
+                                <label for="maskedCardLast4">
+                                    Card Last Four Digits
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="maskedCardLast4"
+                                    name="maskedCardLast4"
+                                    placeholder="1234"
+                                    maxlength="4"
+                                    pattern="[0-9]{4}"
+                                    inputmode="numeric"
+                                >
+                            </div>
+
+
+                            <!-- Transaction Status -->
+                            <div class="form-group">
+                                <label for="transactionStatus">
+                                    Transaction Status
+                                </label>
+
+                                <select
+                                    id="transactionStatus"
+                                    name="transactionStatus"
+                                >
+                                    <option value="PENDING">Pending</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="FAILED">Failed</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+
+                        <!-- DISCLAIMER -->
+                        <div class="form-disclaimer">
+                            <strong>Security notice:</strong>
+                            Do not enter a full card number, CVV, PIN,
+                            password, or other sensitive payment credentials.
+                        </div>
+
+
+                        <!-- BUTTONS -->
+                        <div class="form-actions">
+
+                            <button
+                                type="reset"
+                                class="btn btn-secondary"
+                                id="resetButton"
+                            >
+                                Clear Form
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                id="predictButton"
+                            >
+                                Analyze Transaction
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <!-- INFORMATION CARD -->
+                <div class="prediction-info-card">
+
+                    <div class="info-icon">🛡️</div>
+
+                    <h3>AI Fraud Detection</h3>
+
+                    <p>
+                        CreditGuard analyzes transaction information using
+                        a machine learning model to estimate potential
+                        fraudulent activity.
+                    </p>
+
+                    <div class="info-points">
+                        <div>✓ Transaction risk assessment</div>
+                        <div>✓ Risk score generation</div>
+                        <div>✓ Model-based prediction</div>
+                        <div>✓ Fraud investigation support</div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- PREDICTION RESULT -->
+        <section class="section" id="predictionResultSection" hidden>
+
+            <div class="section-header">
+                <div>
+                    <h2>Prediction Result</h2>
+                    <p>Machine learning analysis of the transaction</p>
+                </div>
+            </div>
+
+
+            <div class="result-grid">
+
+                <!-- Risk Level -->
+                <div class="result-card">
+                    <span class="result-label">Risk Level</span>
+
+                    <h2 id="riskLevel">--</h2>
+
+                    <p>Estimated transaction risk</p>
+                </div>
+
+
+                <!-- Risk Score -->
+                <div class="result-card">
+                    <span class="result-label">Risk Score</span>
+
+                    <h2 id="riskScore">--</h2>
+
+                    <div class="risk-progress">
+                        <div
+                            class="risk-progress-bar"
+                            id="riskProgressBar"
+                            style="width: 0%">
+                        </div>
+                    </div>
+
+                    <p>Score range: 0 to 1</p>
+                </div>
+
+
+                <!-- Prediction -->
+                <div class="result-card">
+                    <span class="result-label">Prediction</span>
+
+                    <h2 id="predictionLabel">--</h2>
+
+                    <p>Model prediction output</p>
+                </div>
+
+            </div>
+
+
+            <!-- MODEL INFORMATION -->
+            <div class="result-details-card">
+
+                <h3>Model Information</h3>
+
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <span>Model Version</span>
+                        <strong id="resultModelVersion">--</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Threshold Used</span>
+                        <strong id="resultThreshold">--</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Prediction Date</span>
+                        <strong id="predictionDate">--</strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Transaction ID</span>
+                        <strong id="resultTransactionId">--</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- EXPLANATION -->
+            <div class="explanation-card">
+
+                <h3>Prediction Explanation</h3>
+
+                <p id="predictionExplanation">
+                    No explanation available.
+                </p>
+
+            </div>
+
+
+            <div class="result-disclaimer">
+                <strong>Important:</strong>
+                A high risk score indicates a higher estimated probability
+                of fraud. It does not prove that a transaction is fraudulent.
+                Review the transaction before taking action.
+            </div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+        <footer class="page-footer">
+            <p>© 2026 CreditGuard | Credit Fraud Detection System</p>
+        </footer>
+
+    </main>
+
+</div>
+
+
+<!-- SCRIPTS -->
+<script src="../shared/js/api.js"></script>
+<script src="../shared/js/session.js"></script>
+<script src="../shared/js/navigation.js"></script>
+<script src="prediction.js"></script>
+
 </body>
 </html>
+
