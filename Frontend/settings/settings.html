@@ -1,11 +1,320 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>System Settings | CreditGuard</title>
+
+    <link rel="stylesheet" href="../shared/css/style.css">
+    <link rel="stylesheet" href="../shared/css/layout.css">
+    <link rel="stylesheet" href="../shared/css/components.css">
+    <link rel="stylesheet" href="settings.css">
 </head>
+
 <body>
-    This is Setting page
+
+<div class="app-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+            <h2>CreditGuard</h2>
+            <span>Fraud Detection System</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="../dashboard/dashboard.html">Dashboard</a>
+            <a href="../transactions/transactions.html">Transactions</a>
+            <a href="../predictions/prediction.html">Fraud Prediction</a>
+            <a href="../batch-analysis/batch-analysis.html">Batch Analysis</a>
+            <a href="../investigations/investigations.html">Investigations</a>
+            <a href="../model-analytics/model-analytics.html">Model Analytics</a>
+            <a href="../reports/reports.html">Reports</a>
+
+            <div class="sidebar-section">Administration</div>
+
+            <a href="settings.html" class="active">Settings</a>
+            <a href="users.html">Users</a>
+            <a href="roles.html">Roles & Permissions</a>
+            <a href="audit-logs.html">Audit Logs</a>
+            <a href="risk-configurations.html">Risk Configuration</a>
+        </nav>
+
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <header class="topbar">
+            <div>
+                <h2>System Settings</h2>
+                <p>Manage CreditGuard application preferences</p>
+            </div>
+        </header>
+
+        <div class="settings-container">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1>Settings</h1>
+                    <p>Configure general, security and notification preferences.</p>
+                </div>
+            </div>
+
+            <div id="settingsMessage"
+                 class="message"
+                 role="status"
+                 aria-live="polite"></div>
+
+            <form id="settingsForm">
+
+                <!-- General Settings -->
+                <section class="settings-card">
+
+                    <h3 class="section-title">General Settings</h3>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="systemName">Application Name</label>
+                            <input type="text"
+                                   id="systemName"
+                                   name="systemName"
+                                   value="CreditGuard">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="timezone">Timezone</label>
+                            <select id="timezone" name="timezone">
+                                <option value="Asia/Kolkata">
+                                    India Standard Time (IST)
+                                </option>
+                                <option value="UTC">UTC</option>
+                                <option value="Europe/London">
+                                    Europe/London
+                                </option>
+                                <option value="America/New_York">
+                                    America/New York
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dateFormat">Date Format</label>
+                            <select id="dateFormat" name="dateFormat">
+                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="currency">Default Currency</label>
+                            <select id="currency" name="currency">
+                                <option value="INR">INR - Indian Rupee</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Security Settings -->
+                <section class="settings-card">
+
+                    <h3 class="section-title">Security Settings</h3>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="sessionTimeout">
+                                Session Timeout
+                            </label>
+
+                            <select id="sessionTimeout"
+                                    name="sessionTimeout">
+                                <option value="15">15 Minutes</option>
+                                <option value="30" selected>30 Minutes</option>
+                                <option value="60">60 Minutes</option>
+                                <option value="120">120 Minutes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="passwordExpiry">
+                                Password Expiry
+                            </label>
+
+                            <select id="passwordExpiry"
+                                    name="passwordExpiry">
+                                <option value="30">30 Days</option>
+                                <option value="60">60 Days</option>
+                                <option value="90" selected>90 Days</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="settings-options">
+
+                        <label class="permission-item">
+                            <input type="checkbox"
+                                   id="twoFactorAuth"
+                                   name="twoFactorAuth">
+                            Enable Two-Factor Authentication
+                        </label>
+
+                        <label class="permission-item">
+                            <input type="checkbox"
+                                   id="loginAlerts"
+                                   name="loginAlerts"
+                                   checked>
+                            Enable Login Alerts
+                        </label>
+
+                        <label class="permission-item">
+                            <input type="checkbox"
+                                   id="auditLogging"
+                                   name="auditLogging"
+                                   checked>
+                            Enable Audit Logging
+                        </label>
+
+                    </div>
+
+                </section>
+
+                <!-- Notification Settings -->
+                <section class="settings-card">
+
+                    <h3 class="section-title">Notification Settings</h3>
+
+                    <div class="settings-options">
+
+                        <label class="permission-item">
+                            <input type="checkbox"
+                                   id="fraudAlerts"
+                                   name="fraudAlerts"
+                                   checked>
+                            Fraud Detection Alerts
+                        </label>
+
+                        <label class="permission-item">
+                            <input type="checkbox"
+                                   id="investigationAlerts"
+                                   name="investigationAlerts"
+                                   checked>
+                            Investigation Updates
+                        </label>
+
+                        <label class="permission-item">
+                            <input type="checkbox"
+                                   id="batchAlerts"
+                                   name="batchAlerts"
+                                   checked>
+                            Batch Analysis Notifications
+                        </label>
+
+                        <label class="permission-item">
+                            <input type="checkbox"
+                                   id="systemAlerts"
+                                   name="systemAlerts"
+                                   checked>
+                            System Error Notifications
+                        </label>
+
+                    </div>
+
+                </section>
+
+                <!-- System Information -->
+                <section class="settings-card">
+
+                    <h3 class="section-title">System Information</h3>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>Application</label>
+                            <input type="text"
+                                   value="CreditGuard"
+                                   readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Application Version</label>
+                            <input type="text"
+                                   value="1.0.0"
+                                   readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Backend Technology</label>
+                            <input type="text"
+                                   value="Java Spring Boot"
+                                   readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Machine Learning Service</label>
+                            <input type="text"
+                                   value="Python FastAPI"
+                                   readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Database</label>
+                            <input type="text"
+                                   value="MySQL"
+                                   readonly>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Actions -->
+                <div class="form-actions">
+
+                    <button type="reset"
+                            class="btn btn-secondary"
+                            id="resetSettingsButton">
+                        Reset
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                            id="saveSettingsButton">
+                        Save Settings
+                    </button>
+
+                </div>
+
+            </form>
+
+            <!-- Footer -->
+            <footer class="page-footer">
+                <p>© 2026 CreditGuard | Fraud Detection System</p>
+            </footer>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="../shared/js/api.js"></script>
+<script src="../shared/js/session.js"></script>
+<script src="../shared/js/navigation.js"></script>
+<script src="settings.js"></script>
+
 </body>
 </html>

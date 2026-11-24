@@ -1,11 +1,487 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+
+    <title>Overview Dashboard | CreditGuard</title>
+
+    <link rel="stylesheet" href="../shared/css/style.css">
+    <link rel="stylesheet" href="dashboard.css">
 </head>
+
 <body>
-    This is Dashboard page
+
+<div class="dashboard-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            CreditGuard
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a href="dashboard.html" class="active">
+                <span>▦</span> Overview
+            </a>
+
+            <a href="../transactions/transactions.html">
+                <span>▤</span> Transactions
+            </a>
+
+            <a href="../predictions/prediction.html">
+                <span>⌕</span> Fraud Prediction
+            </a>
+
+            <a href="../batch-analysis/batch-analysis.html">
+                <span>▧</span> Batch Analysis
+            </a>
+
+            <a href="../investigations/investigations.html">
+                <span>⚑</span> Investigations
+            </a>
+
+            <a href="../model-analytics/model-analytics.html">
+                <span>▥</span> Model Analytics
+            </a>
+
+            <a href="../reports/reports.html">
+                <span>▤</span> Reports
+            </a>
+
+            <a href="../settings/settings.html">
+                <span>⚙</span> Settings
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="../auth/login.html" id="logoutButton">
+                ⇥ Logout
+            </a>
+        </div>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <header class="topbar">
+
+            <div class="page-heading">
+                <h1>Overview Dashboard</h1>
+                <p>Monitor transactions and fraud risk activity.</p>
+            </div>
+
+            <div class="topbar-right">
+
+                <div class="date-display" id="currentDate">
+                    --
+                </div>
+
+                <div class="user-profile">
+                    <div class="user-avatar">U</div>
+
+                    <div>
+                        <strong id="userName">User</strong>
+                        <small>CreditGuard Analyst</small>
+                    </div>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- Dashboard Content -->
+        <section class="dashboard-content">
+
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+
+                <div>
+                    <h2>Welcome to CreditGuard</h2>
+
+                    <p>
+                        Here's an overview of your transaction monitoring
+                        and fraud detection activity.
+                    </p>
+                </div>
+
+                <div class="dashboard-actions">
+
+                    <a href="../predictions/prediction.html"
+                       class="primary-button">
+                        + New Prediction
+                    </a>
+
+                    <a href="../batch-analysis/batch-analysis.html"
+                       class="secondary-button">
+                        Upload Batch
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- Date Filter -->
+            <div class="filter-section">
+
+                <label for="dateRange">
+                    Dashboard Time Range
+                </label>
+
+                <select id="dateRange">
+                    <option value="today">Today</option>
+                    <option value="7d" selected>Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                    <option value="90d">Last 90 Days</option>
+                    <option value="all">All Time</option>
+                </select>
+
+                <button id="refreshButton" class="refresh-button">
+                    ↻ Refresh
+                </button>
+
+            </div>
+
+
+            <!-- Loading and Error Messages -->
+            <div id="dashboardMessage"
+                 class="dashboard-message"
+                 role="status"
+                 aria-live="polite"
+                 hidden>
+            </div>
+
+
+            <!-- KPI Cards -->
+            <div class="stats-grid">
+
+                <article class="stat-card">
+
+                    <div class="stat-top">
+                        <span class="stat-label">
+                            Total Transactions
+                        </span>
+
+                        <span class="stat-icon blue">▤</span>
+                    </div>
+
+                    <h2 id="totalTransactions">--</h2>
+
+                    <p class="stat-description">
+                        Transactions in selected period
+                    </p>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-top">
+                        <span class="stat-label">
+                            High Risk Transactions
+                        </span>
+
+                        <span class="stat-icon red">⚑</span>
+                    </div>
+
+                    <h2 id="highRiskTransactions">--</h2>
+
+                    <p class="stat-description">
+                        Transactions classified as high risk
+                    </p>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-top">
+                        <span class="stat-label">
+                            Medium Risk Transactions
+                        </span>
+
+                        <span class="stat-icon orange">!</span>
+                    </div>
+
+                    <h2 id="mediumRiskTransactions">--</h2>
+
+                    <p class="stat-description">
+                        Transactions requiring attention
+                    </p>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-top">
+                        <span class="stat-label">
+                            Low Risk Transactions
+                        </span>
+
+                        <span class="stat-icon green">✓</span>
+                    </div>
+
+                    <h2 id="lowRiskTransactions">--</h2>
+
+                    <p class="stat-description">
+                        Transactions classified as low risk
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <!-- Charts Section -->
+            <div class="charts-grid">
+
+                <!-- Transaction Trend -->
+                <section class="dashboard-card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Transaction Trend</h3>
+
+                            <p>
+                                Transaction activity over selected period
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="chart-container">
+
+                        <canvas
+                            id="transactionTrendChart"
+                            role="img"
+                            aria-label="Transaction trend chart">
+                        </canvas>
+
+                        <p id="trendEmpty"
+                           class="chart-empty"
+                           hidden>
+                            No transaction trend data available.
+                        </p>
+
+                    </div>
+
+                </section>
+
+
+                <!-- Risk Distribution -->
+                <section class="dashboard-card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Risk Distribution</h3>
+
+                            <p>
+                                Distribution of transaction risk levels
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="risk-chart-container">
+
+                        <canvas
+                            id="riskDistributionChart"
+                            role="img"
+                            aria-label="Risk distribution chart">
+                        </canvas>
+
+                        <p id="riskEmpty"
+                           class="chart-empty"
+                           hidden>
+                            No risk distribution data available.
+                        </p>
+
+                    </div>
+
+                    <div class="risk-legend">
+
+                        <span>
+                            <i class="legend-dot low-dot"></i>
+                            Low Risk
+                        </span>
+
+                        <span>
+                            <i class="legend-dot medium-dot"></i>
+                            Medium Risk
+                        </span>
+
+                        <span>
+                            <i class="legend-dot high-dot"></i>
+                            High Risk
+                        </span>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+            <!-- Recent Suspicious Transactions -->
+            <section class="dashboard-card recent-transactions">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Recent Suspicious Transactions</h3>
+
+                        <p>
+                            Transactions that may require analyst review
+                        </p>
+                    </div>
+
+                    <a href="../transactions/transactions.html"
+                       class="view-all-link">
+                        View All →
+                    </a>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date & Time</th>
+                                <th>Amount</th>
+                                <th>Risk Score</th>
+                                <th>Risk Level</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="recentTransactionsBody">
+
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    Loading transactions...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            <!-- System and Model Status -->
+            <div class="system-grid">
+
+                <section class="dashboard-card system-card">
+
+                    <div class="card-header">
+                        <h3>System Status</h3>
+                    </div>
+
+                    <div class="status-item">
+
+                        <span>Backend API</span>
+
+                        <strong id="backendStatus"
+                                class="status-unknown">
+                            Checking...
+                        </strong>
+
+                    </div>
+
+                    <div class="status-item">
+
+                        <span>ML Service</span>
+
+                        <strong id="mlStatus"
+                                class="status-unknown">
+                            Not available
+                        </strong>
+
+                    </div>
+
+                </section>
+
+
+                <section class="dashboard-card system-card">
+
+                    <div class="card-header">
+                        <h3>Model Information</h3>
+                    </div>
+
+                    <div class="status-item">
+
+                        <span>Active Model Version</span>
+
+                        <strong id="modelVersion">
+                            --
+                        </strong>
+
+                    </div>
+
+                    <div class="status-item">
+
+                        <span>Model Status</span>
+
+                        <strong id="modelStatus">
+                            --
+                        </strong>
+
+                    </div>
+
+                    <a href="../model-analytics/model-analytics.html"
+                       class="view-all-link">
+                        View Model Analytics →
+                    </a>
+
+                </section>
+
+            </div>
+
+
+            <!-- Disclaimer -->
+            <div class="dashboard-disclaimer">
+
+                <strong>Important:</strong>
+
+                Fraud risk scores are model-generated indicators.
+                They are not definitive proof of fraud. Suspicious
+                transactions should be reviewed by an authorized analyst.
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Dashboard JavaScript -->
+<script src="../shared/js/api.js"></script>
+<script src="../shared/js/session.js"></script>
+<script src="dashboard.js"></script>
+
 </body>
 </html>

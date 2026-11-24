@@ -3,9 +3,583 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Batch Results | CreditGuard</title>
+
+    <link rel="stylesheet" href="../shared/css/style.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172b4d;
+        }
+
+        .page-container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            font-size: 26px;
+            margin: 0 0 8px;
+        }
+
+        .page-header p {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .btn {
+            padding: 11px 17px;
+            border: none;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #334155;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+        }
+
+        .summary-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0 0 12px;
+        }
+
+        .summary-card h2 {
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .fraud-value {
+            color: #dc2626;
+        }
+
+        .safe-value {
+            color: #16a34a;
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .risk-card {
+            padding: 18px;
+            border-radius: 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+        .risk-card h3 {
+            margin: 0 0 10px;
+            font-size: 15px;
+        }
+
+        .risk-card strong {
+            font-size: 24px;
+        }
+
+        .low {
+            color: #16a34a;
+        }
+
+        .medium {
+            color: #d97706;
+        }
+
+        .high {
+            color: #dc2626;
+        }
+
+        .table-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-fraud {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-normal {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-message {
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #eff6ff;
+            color: #1e40af;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .empty-state {
+            padding: 30px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 900px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .page-container {
+                padding: 16px;
+            }
+
+            .summary-grid,
+            .risk-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    This is Batch-Analysis Result page
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <h1>Batch Analysis Results</h1>
+            <p>CreditGuard / Batch Analysis / Results</p>
+        </div>
+
+        <div>
+            <a href="batch-analysis.html" class="btn btn-secondary">
+                Back to Batch Analysis
+            </a>
+
+            <button class="btn" id="downloadBtn">
+                Download CSV
+            </button>
+        </div>
+    </div>
+
+    <div class="status-message" id="statusMessage"></div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+
+        <div class="summary-card">
+            <p>Total Transactions</p>
+            <h2 id="totalTransactions">--</h2>
+        </div>
+
+        <div class="summary-card">
+            <p>Fraud Detected</p>
+            <h2 class="fraud-value" id="fraudCount">--</h2>
+        </div>
+
+        <div class="summary-card">
+            <p>Normal Transactions</p>
+            <h2 class="safe-value" id="normalCount">--</h2>
+        </div>
+
+        <div class="summary-card">
+            <p>Fraud Percentage</p>
+            <h2 id="fraudPercentage">--</h2>
+        </div>
+
+    </div>
+
+    <!-- Risk Distribution -->
+    <h2 style="margin-bottom: 15px;">Risk Distribution</h2>
+
+    <div class="risk-grid">
+
+        <div class="risk-card">
+            <h3>Low Risk</h3>
+            <strong class="low" id="lowRisk">--</strong>
+        </div>
+
+        <div class="risk-card">
+            <h3>Medium Risk</h3>
+            <strong class="medium" id="mediumRisk">--</strong>
+        </div>
+
+        <div class="risk-card">
+            <h3>High Risk</h3>
+            <strong class="high" id="highRisk">--</strong>
+        </div>
+
+    </div>
+
+    <!-- Results Table -->
+    <div class="table-container">
+
+        <div class="table-header">
+            <h2>Transaction Results</h2>
+
+            <input
+                type="search"
+                id="searchInput"
+                placeholder="Search transaction ID..."
+                style="max-width: 250px;"
+            >
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Amount</th>
+                    <th>Fraud Status</th>
+                    <th>Risk Level</th>
+                    <th>Risk Score</th>
+                </tr>
+            </thead>
+
+            <tbody id="resultsTableBody">
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        Loading batch results...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+    const API_BASE = "/api/v1";
+    const params = new URLSearchParams(window.location.search);
+    const batchId = params.get("batchId");
+
+    let batchResults = [];
+
+    const statusMessage = document.getElementById("statusMessage");
+    const tableBody = document.getElementById("resultsTableBody");
+
+    function showStatus(message) {
+        statusMessage.textContent = message;
+        statusMessage.style.display = "block";
+    }
+
+    function formatNumber(value) {
+        return Number(value || 0).toLocaleString("en-IN");
+    }
+
+    function formatPercentage(value) {
+        return `${Number(value || 0).toFixed(2)}%`;
+    }
+
+    function getRiskClass(risk) {
+        const value = String(risk || "").toLowerCase();
+
+        if (value === "high") return "badge-high";
+        if (value === "medium") return "badge-medium";
+
+        return "badge-low";
+    }
+
+    function getFraudClass(isFraud) {
+        return isFraud
+            ? "badge-fraud"
+            : "badge-normal";
+    }
+
+    function renderResults(results) {
+        tableBody.innerHTML = "";
+
+        if (!results || results.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        No transaction results found.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        results.forEach(transaction => {
+            const row = document.createElement("tr");
+
+            const transactionId = transaction.transactionId ?? transaction.id ?? "N/A";
+            const amount = Number(transaction.amount ?? 0);
+            const isFraud = Boolean(transaction.isFraud ?? transaction.fraud);
+            const risk = transaction.riskLevel ?? transaction.risk ?? "Low";
+            const score = Number(transaction.riskScore ?? transaction.score ?? 0);
+
+            const cells = [
+                transactionId,
+                `₹${amount.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`,
+                isFraud ? "Fraud" : "Normal",
+                risk,
+                formatPercentage(score)
+            ];
+
+            cells.forEach((value, index) => {
+                const cell = document.createElement("td");
+
+                if (index === 2) {
+                    const badge = document.createElement("span");
+                    badge.className = `badge ${getFraudClass(isFraud)}`;
+                    badge.textContent = value;
+                    cell.appendChild(badge);
+                } else if (index === 3) {
+                    const badge = document.createElement("span");
+                    badge.className = `badge ${getRiskClass(risk)}`;
+                    badge.textContent = value;
+                    cell.appendChild(badge);
+                } else {
+                    cell.textContent = value;
+                }
+
+                row.appendChild(cell);
+            });
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    async function loadBatchResults() {
+        if (!batchId) {
+            showStatus("Batch ID is missing. Open this page with a valid batchId.");
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        No batch selected.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${API_BASE}/batches/${encodeURIComponent(batchId)}`,
+                {
+                    method: "GET",
+                    credentials: "include"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Unable to load batch results.");
+            }
+
+            const data = await response.json();
+
+            // Expected response shape is an assumption pending backend confirmation.
+            const results = data.results || data.transactions || [];
+
+            batchResults = results;
+
+            document.getElementById("totalTransactions").textContent =
+                formatNumber(data.totalTransactions ?? results.length);
+
+            document.getElementById("fraudCount").textContent =
+                formatNumber(data.fraudCount);
+
+            document.getElementById("normalCount").textContent =
+                formatNumber(data.normalCount);
+
+            document.getElementById("fraudPercentage").textContent =
+                formatPercentage(data.fraudPercentage);
+
+            document.getElementById("lowRisk").textContent =
+                formatNumber(data.lowRiskCount);
+
+            document.getElementById("mediumRisk").textContent =
+                formatNumber(data.mediumRiskCount);
+
+            document.getElementById("highRisk").textContent =
+                formatNumber(data.highRiskCount);
+
+            renderResults(batchResults);
+
+        } catch (error) {
+            showStatus(error.message);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        Could not load batch results.
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // Search transaction results
+    document.getElementById("searchInput").addEventListener("input", function () {
+        const searchTerm = this.value.toLowerCase();
+
+        const filteredResults = batchResults.filter(transaction => {
+            const id = String(
+                transaction.transactionId ?? transaction.id ?? ""
+            ).toLowerCase();
+
+            return id.includes(searchTerm);
+        });
+
+        renderResults(filteredResults);
+    });
+
+    // Download currently loaded results as CSV
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+        if (!batchResults.length) {
+            showStatus("No results available to download.");
+            return;
+        }
+
+        const headers = [
+            "Transaction ID",
+            "Amount",
+            "Fraud Status",
+            "Risk Level",
+            "Risk Score"
+        ];
+
+        const rows = batchResults.map(transaction => [
+            transaction.transactionId ?? transaction.id ?? "",
+            transaction.amount ?? 0,
+            (transaction.isFraud ?? transaction.fraud) ? "Fraud" : "Normal",
+            transaction.riskLevel ?? transaction.risk ?? "",
+            transaction.riskScore ?? transaction.score ?? ""
+        ]);
+
+        const csvContent = [headers, ...rows]
+            .map(row => row.map(value =>
+                `"${String(value).replace(/"/g, '""')}"`
+            ).join(","))
+            .join("\n");
+
+        const blob = new Blob([csvContent], {
+            type: "text/csv;charset=utf-8;"
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = `CreditGuard_Batch_${batchId}.csv`;
+        link.click();
+
+        URL.revokeObjectURL(url);
+    });
+
+    loadBatchResults();
+</script>
+
 </body>
 </html>

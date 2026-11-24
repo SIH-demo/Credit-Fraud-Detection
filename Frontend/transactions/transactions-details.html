@@ -1,0 +1,308 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Details | CreditGuard</title>
+
+    <link rel="stylesheet" href="../shared/css/style.css">
+    <link rel="stylesheet" href="../shared/css/layout.css">
+    <link rel="stylesheet" href="../shared/css/components.css">
+    <link rel="stylesheet" href="transactions.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>CreditGuard</h2>
+            <p>Fraud Detection System</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="../dashboard/dashboard.html" class="nav-link">
+                Dashboard
+            </a>
+
+            <a href="transactions.html" class="nav-link active">
+                Transactions
+            </a>
+
+            <a href="../predictions/prediction.html" class="nav-link">
+                Fraud Prediction
+            </a>
+
+            <a href="../batch-analysis/batch-analysis.html" class="nav-link">
+                Batch Analysis
+            </a>
+
+            <a href="../investigations/investigations.html" class="nav-link">
+                Investigations
+            </a>
+
+            <a href="../model-analytics/model-analytics.html" class="nav-link">
+                Model Analytics
+            </a>
+
+            <a href="../reports/reports.html" class="nav-link">
+                Reports
+            </a>
+
+            <a href="../settings/settings.html" class="nav-link">
+                Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button type="button" class="logout-button">
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <header class="topbar">
+            <button
+                type="button"
+                class="sidebar-toggle"
+                aria-label="Open navigation"
+                aria-expanded="false">
+                ☰
+            </button>
+
+            <div>
+                <h3>Transaction Details</h3>
+                <p>View transaction and fraud prediction information</p>
+            </div>
+
+            <div class="user-profile">
+                <span data-user-name>User</span>
+                <small data-user-role>Role</small>
+            </div>
+        </header>
+
+        <section class="page-content">
+
+            <!-- Page Heading -->
+            <div class="page-header">
+                <div>
+                    <h1>Transaction Details</h1>
+                    <p>Complete information about the selected transaction.</p>
+                </div>
+
+                <a href="transactions.html" class="btn btn-secondary">
+                    ← Back to Transactions
+                </a>
+            </div>
+
+            <!-- Message -->
+            <div
+                id="transactionMessage"
+                class="alert"
+                role="status"
+                aria-live="polite"
+                hidden>
+            </div>
+
+            <!-- Transaction Header -->
+            <section class="card">
+                <div class="transaction-heading">
+                    <div>
+                        <h2 id="transactionReference">Loading...</h2>
+                        <p id="transactionDate">Transaction date unavailable</p>
+                    </div>
+
+                    <span id="transactionStatus" class="badge">
+                        Loading
+                    </span>
+                </div>
+            </section>
+
+            <!-- Transaction Summary -->
+            <section class="stats-grid">
+
+                <div class="stat-card">
+                    <p>Transaction Amount</p>
+                    <h2 id="transactionAmount">--</h2>
+                </div>
+
+                <div class="stat-card">
+                    <p>Fraud Risk Score</p>
+                    <h2 id="transactionRiskScore">--</h2>
+                </div>
+
+                <div class="stat-card">
+                    <p>Risk Classification</p>
+                    <h2 id="transactionRiskLevel">--</h2>
+                </div>
+
+                <div class="stat-card">
+                    <p>Model Version</p>
+                    <h2 id="transactionModelVersion">--</h2>
+                </div>
+
+            </section>
+
+            <!-- Transaction Information -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>Transaction Information</h2>
+                </div>
+
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <label>Transaction ID</label>
+                        <p id="transactionId">--</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>External Reference</label>
+                        <p id="externalReference">--</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Amount</label>
+                        <p id="amount">--</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Currency</label>
+                        <p id="currency">--</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Merchant</label>
+                        <p id="merchant">--</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Country</label>
+                        <p id="country">--</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Transaction Time</label>
+                        <p id="transactionTime">--</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Card Number</label>
+                        <p id="maskedCard">****</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label>Transaction Status</label>
+                        <p id="transactionStatusDetail">--</p>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Fraud Prediction -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>Fraud Prediction Analysis</h2>
+                </div>
+
+                <div class="prediction-summary">
+
+                    <div class="risk-result">
+                        <label>Risk Classification</label>
+                        <h2 id="predictionRiskLevel">--</h2>
+                    </div>
+
+                    <div class="risk-result">
+                        <label>Risk Score</label>
+                        <h2 id="predictionRiskScore">--</h2>
+                    </div>
+
+                    <div class="risk-result">
+                        <label>Threshold Used</label>
+                        <h2 id="predictionThreshold">--</h2>
+                    </div>
+
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Risk Score</span>
+                        <span id="riskPercentage">--</span>
+                    </div>
+
+                    <div class="progress-track">
+                        <div
+                            id="riskProgressBar"
+                            class="progress-fill"
+                            role="progressbar"
+                            aria-label="Fraud risk score"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <label>Prediction Date</label>
+                    <p id="predictionDate">--</p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Model Explanation</label>
+                    <p id="predictionExplanation">
+                        No explanation available.
+                    </p>
+                </div>
+
+                <p class="info-note">
+                    A high risk score indicates a higher estimated fraud
+                    risk. It does not prove that a transaction is fraudulent.
+                </p>
+            </section>
+
+            <!-- Actions -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>Actions</h2>
+                </div>
+
+                <div class="action-buttons">
+                    <a
+                        href="../investigations/investigations.html"
+                        class="btn btn-primary">
+                        View Investigations
+                    </a>
+
+                    <button
+                        type="button"
+                        id="refreshTransactionButton"
+                        class="btn btn-secondary">
+                        Refresh Details
+                    </button>
+                </div>
+            </section>
+
+            <footer class="page-footer">
+                <p>© 2026 CreditGuard | Fraud Detection System</p>
+            </footer>
+
+        </section>
+    </main>
+
+    <!-- Shared Scripts -->
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/session.js"></script>
+    <script src="../shared/js/navigation.js"></script>
+    <script src="../app.js"></script>
+
+    <!-- Page Script -->
+    <script src="transactions-details.js"></script>
+
+</body>
+</html>

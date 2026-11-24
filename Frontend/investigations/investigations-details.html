@@ -3,9 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Investigation Details | CreditGuard</title>
+
+    <link rel="stylesheet" href="investigations.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6fb;
+            color: #1e293b;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 245px;
+            background: #101c36;
+            color: white;
+            padding: 25px 16px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 23px;
+            font-weight: bold;
+            margin: 0 0 35px 12px;
+        }
+
+        .logo span {
+            color: #60a5fa;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-bottom: 8px;
+        }
+
+        .nav-menu a {
+            display: block;
+            padding: 13px 15px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: #263b60;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            padding: 30px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .topbar h1 {
+            font-size: 25px;
+        }
+
+        .topbar p {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .user-profile {
+            background: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #2563eb;
+            text-decoration: none;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            font-size: 17px;
+        }
+
+        .case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .case-id {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .case-title {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .case-description {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 13px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .priority {
+            display: inline-block;
+            padding: 7px 13px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .detail-item label {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 7px;
+        }
+
+        .detail-item p {
+            font-size: 14px;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        /* Risk */
+        .risk-score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #dc2626;
+        }
+
+        .risk-label {
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dbe2ea;
+            border-radius: 7px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+        }
+
+        .form-group textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #2563eb;
+        }
+
+        .btn {
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        /* Timeline */
+        .timeline {
+            border-left: 2px solid #dbeafe;
+            margin-left: 8px;
+            padding-left: 22px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -29px;
+            top: 4px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #2563eb;
+        }
+
+        .timeline-item h4 {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .timeline-item p {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .empty-state {
+            color: #94a3b8;
+            font-size: 13px;
+            padding: 10px 0;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .details-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 650px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            .main-content {
+                padding: 18px;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    This is Investigation - Details page
+
+<div class="app-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="logo">Credit<span>Guard</span></div>
+
+        <ul class="nav-menu">
+            <li><a href="../dashboard/dashboard.html">Dashboard</a></li>
+            <li><a href="../transactions/transactions.html">Transactions</a></li>
+            <li><a href="../predictions/prediction.html">Fraud Prediction</a></li>
+            <li><a href="../batch-analysis/batch-analysis.html">Batch Analysis</a></li>
+            <li><a href="investigations.html" class="active">Investigations</a></li>
+            <li><a href="../model-analytics/model-analytics.html">Model Analytics</a></li>
+            <li><a href="../reports/reports.html">Reports</a></li>
+            <li><a href="../settings/settings.html">Settings</a></li>
+        </ul>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <div class="topbar">
+            <div>
+                <h1>Investigation Details</h1>
+                <p>Review transaction information and manage the investigation case.</p>
+            </div>
+
+            <div class="user-profile">
+                Analyst Account
+            </div>
+        </div>
+
+        <a href="investigations.html" class="back-link">
+            ← Back to Investigations
+        </a>
+
+
+        <!-- Case Overview -->
+        <section class="card">
+
+            <div class="case-header">
+
+                <div>
+                    <p class="case-id">
+                        Case ID: <span id="caseId">Loading...</span>
+                    </p>
+
+                    <h2 class="case-title">Investigation Overview</h2>
+
+                    <p class="case-description">
+                        Review the case information and transaction risk details.
+                    </p>
+                </div>
+
+                <div>
+                    <span class="status" id="caseStatus">Loading</span>
+                    <span class="priority" id="casePriority">Priority</span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Transaction Information -->
+        <section class="card">
+
+            <div class="card-header">
+                <h2>Transaction Information</h2>
+            </div>
+
+            <div class="details-grid">
+
+                <div class="detail-item">
+                    <label>Transaction ID</label>
+                    <p id="transactionId">—</p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Transaction Amount</label>
+                    <p id="transactionAmount">—</p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Currency</label>
+                    <p id="currency">—</p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Merchant</label>
+                    <p id="merchant">—</p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Transaction Date</label>
+                    <p id="transactionDate">—</p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Masked Card Number</label>
+                    <p id="maskedCard">—</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Risk Information -->
+        <section class="card">
+
+            <div class="card-header">
+                <h2>Fraud Risk Assessment</h2>
+            </div>
+
+            <div class="details-grid">
+
+                <div class="detail-item">
+                    <label>Risk Score</label>
+                    <p class="risk-score" id="riskScore">—</p>
+                    <p class="risk-label" id="riskLevel">Risk level unavailable</p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Model Version</label>
+                    <p id="modelVersion">—</p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Prediction Date</label>
+                    <p id="predictionDate">—</p>
+                </div>
+
+            </div>
+
+            <p class="empty-state">
+                Risk scores are model outputs and should be reviewed by an analyst.
+                They are not definitive proof of fraud.
+            </p>
+
+        </section>
+
+
+        <!-- Investigation Management -->
+        <section class="card">
+
+            <div class="card-header">
+                <h2>Manage Investigation</h2>
+            </div>
+
+            <form id="investigationForm">
+
+                <div class="details-grid">
+
+                    <div class="form-group">
+                        <label for="assignedTo">Assign Analyst</label>
+                        <select id="assignedTo" name="assignedTo">
+                            <option value="">Select Analyst</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="investigationStatus">Case Status</label>
+                        <select id="investigationStatus" name="status">
+                            <option value="OPEN">Open</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="UNDER_REVIEW">Under Review</option>
+                            <option value="CLOSED">Closed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="investigationOutcome">Investigation Outcome</label>
+                        <select id="investigationOutcome" name="outcome">
+                            <option value="">Select Outcome</option>
+                            <option value="CONFIRMED_FRAUD">Confirmed Fraud</option>
+                            <option value="LEGITIMATE">Legitimate Transaction</option>
+                            <option value="INCONCLUSIVE">Inconclusive</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">Analyst Remarks</label>
+                    <textarea
+                        id="remarks"
+                        name="remarks"
+                        placeholder="Enter investigation findings or remarks..."
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Update Investigation
+                </button>
+
+                <button type="reset" class="btn btn-secondary">
+                    Reset
+                </button>
+
+                <p id="formMessage" class="message" aria-live="polite"></p>
+
+            </form>
+
+        </section>
+
+
+        <!-- Investigation History -->
+        <section class="card">
+
+            <div class="card-header">
+                <h2>Investigation History</h2>
+            </div>
+
+            <div class="timeline" id="investigationTimeline">
+
+                <p class="empty-state">
+                    Investigation history will appear here when records are loaded.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- Analyst Notes -->
+        <section class="card">
+
+            <div class="card-header">
+                <h2>Investigation Notes</h2>
+            </div>
+
+            <div id="investigationNotes">
+                <p class="empty-state">
+                    No investigation notes loaded.
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
 </body>
 </html>

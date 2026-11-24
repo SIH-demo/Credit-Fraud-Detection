@@ -1,11 +1,213 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+
+    <title>Batch Analysis | CreditGuard</title>
+
+    <link rel="stylesheet" href="../shared/css/style.css">
+    <link rel="stylesheet" href="batch-analysis.css">
 </head>
+
 <body>
-    This is Batch-Analysis page
+
+    <div class="dashboard-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                CreditGuard
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="../dashboard/dashboard.html">Dashboard</a>
+                <a href="../transactions/transactions.html">Transactions</a>
+                <a href="../predictions/prediction.html">Fraud Prediction</a>
+                <a href="batch-analysis.html" class="active">Batch Analysis</a>
+                <a href="../investigations/investigations.html">Investigations</a>
+                <a href="../model-analytics/model-analytics.html">Model Analytics</a>
+                <a href="../reports/reports.html">Reports</a>
+                <a href="../settings/settings.html">Settings</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="../auth/login.html">Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <header class="topbar">
+                <div>
+                    <h1>Batch Analysis</h1>
+                    <p>Upload and analyze multiple transactions for fraud risk.</p>
+                </div>
+
+                <div class="user-profile">
+                    <span>CreditGuard User</span>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <section class="content">
+
+                <!-- Information -->
+                <div class="page-intro">
+                    <h2>Bulk Transaction Analysis</h2>
+                    <p>
+                        Upload a CSV file containing transaction data.
+                        CreditGuard will process the transactions and
+                        provide fraud prediction results.
+                    </p>
+                </div>
+
+                <!-- Upload Card -->
+                <div class="upload-card">
+
+                    <div class="upload-heading">
+                        <h2>Upload CSV File</h2>
+                        <p>Select your transaction dataset for batch analysis.</p>
+                    </div>
+
+                    <form id="batchUploadForm" enctype="multipart/form-data">
+
+                        <div class="upload-area" id="uploadArea">
+
+                            <div class="upload-icon">
+                                &#8682;
+                            </div>
+
+                            <h3>Choose CSV File</h3>
+
+                            <p>
+                                Drag and drop your CSV file here
+                                or click below to browse.
+                            </p>
+
+                            <input
+                                type="file"
+                                id="csvFile"
+                                name="file"
+                                accept=".csv,text/csv"
+                                hidden
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                id="browseButton"
+                                class="secondary-button">
+                                Browse Files
+                            </button>
+
+                            <p class="file-requirement">
+                                Accepted format: CSV
+                            </p>
+
+                        </div>
+
+                        <!-- Selected File -->
+                        <div class="selected-file" id="selectedFile" hidden>
+
+                            <div class="file-details">
+                                <span class="file-icon">&#128196;</span>
+
+                                <div>
+                                    <strong id="fileName">No file selected</strong>
+                                    <p id="fileSize"></p>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                id="removeFileButton"
+                                class="remove-button">
+                                Remove
+                            </button>
+
+                        </div>
+
+                        <!-- Upload Button -->
+                        <div class="upload-actions">
+
+                            <button
+                                type="submit"
+                                id="uploadButton"
+                                class="primary-button">
+                                Upload and Analyze
+                            </button>
+
+                            <button
+                                type="reset"
+                                id="resetButton"
+                                class="secondary-button">
+                                Reset
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    <!-- Upload Status -->
+                    <div
+                        id="uploadStatus"
+                        class="upload-status"
+                        role="status"
+                        aria-live="polite"
+                        hidden>
+                    </div>
+
+                </div>
+
+                <!-- Instructions -->
+                <div class="instructions-card">
+
+                    <h2>Instructions</h2>
+
+                    <ul>
+                        <li>Upload a valid CSV file.</li>
+                        <li>Make sure the CSV contains the transaction features expected by the backend.</li>
+                        <li>Do not include raw card numbers, CVV, PINs, or other sensitive payment credentials.</li>
+                        <li>Wait for batch processing to complete.</li>
+                        <li>Open the results page to review transaction-level predictions.</li>
+                    </ul>
+
+                </div>
+
+                <!-- Recent Batch -->
+                <div class="recent-batch-card">
+
+                    <div class="section-heading">
+                        <h2>Latest Batch</h2>
+                    </div>
+
+                    <div id="latestBatch">
+                        <p>No batch uploaded in this session.</p>
+                    </div>
+
+                    <a
+                        href="batch-results.html"
+                        id="viewResultsLink"
+                        class="primary-button"
+                        hidden>
+                        View Results
+                    </a>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/session.js"></script>
+    <script src="batch-analysis.js"></script>
+
 </body>
 </html>
+
