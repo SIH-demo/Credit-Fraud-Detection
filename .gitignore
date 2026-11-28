@@ -72,3 +72,4 @@ playwright-report/
 request.json
 invalid-request.json
 ML/data/
+tests/*

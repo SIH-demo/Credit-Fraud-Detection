@@ -110,6 +110,27 @@
             return Boolean(this.getUser());
         },
 
+                /**
+         * Verify authentication using the backend session.
+         * The backend is the authority, not sessionStorage.
+         */
+        async checkAuthentication() {
+            if (!window.CreditGuardAPI) {
+                throw new Error("API service is not loaded.");
+            }
+
+            try {
+                await CreditGuardAPI.get("transactions");
+                return true;
+            } catch (error) {
+                if (error.status === 401) {
+                    return false;
+                }
+
+                throw error;
+            }
+        },
+
         /**
          * Check the locally stored role for UI purposes.
          * Backend must independently enforce permissions.
@@ -159,14 +180,25 @@
             );
         },
 
-        /**
-         * Redirect to login after local session cleanup.
-         * Call a backend logout endpoint here once it is defined.
-         */
-        logout() {
-            this.clearLocalSession();
-            window.location.href = "/auth/login.html";
-        },
+        
+async logout() {
+    if (!window.CreditGuardAPI) {
+        console.error("API service is not loaded.");
+        return;
+    }
+
+    try {
+        await CreditGuardAPI.post("auth/logout", {});
+
+        this.clearLocalSession();
+        window.location.href = "/auth/login.html";
+
+    } catch (error) {
+        console.error("Backend logout failed:", error);
+        alert("Unable to log out securely. Please try again.");
+    }
+},
+
 
         /**
          * Display the current user's name.

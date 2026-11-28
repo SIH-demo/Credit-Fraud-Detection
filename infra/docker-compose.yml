@@ -100,13 +100,19 @@ services:
       DB_USERNAME: cfd_user
       ML_SERVICE_URL: http://ml:8000
       ANALYTICS_SERVICE_URL: http://analytics:8001
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
 
     secrets:
       - mysql_app_password
+      - smtp_username
+      - smtp_app_password
 
     entrypoint: ["/bin/sh", "-c"]
     command:
-      - 'export DB_PASSWORD="$$(cat /run/secrets/mysql_app_password)" && exec java -jar app.jar'
+      - 'export DB_PASSWORD="$$(cat /run/secrets/mysql_app_password)" && export SPRING_MAIL_USERNAME="$$(cat /run/secrets/smtp_username)" && export SPRING_MAIL_PASSWORD="$$(cat /run/secrets/smtp_app_password)" && exec java -jar app.jar'
 
     depends_on:
       mysql:
@@ -150,3 +156,9 @@ secrets:
 
   mysql_root_password:
     file: ./docker/secrets/mysql_root_password.txt
+
+  smtp_username:
+    file: ./docker/secrets/smtp_username.txt
+
+  smtp_app_password:
+    file: ./docker/secrets/smtp_app_password.txt

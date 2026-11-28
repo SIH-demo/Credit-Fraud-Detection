@@ -197,12 +197,15 @@ textarea {
    MESSAGE
 ========================================= */
 
+
 .page-message {
     display: none;
     padding: 12px 16px;
     margin-bottom: 22px;
     border-radius: 8px;
     font-size: 13px;
+    line-height: 1.5;
+    border: 1px solid transparent;
 }
 
 .page-message.info,
@@ -211,21 +214,11 @@ textarea {
     display: block;
 }
 
-.page-message.info {
-    color: #1d4ed8;
-    background: #eff6ff;
-}
-
-.page-message.success {
-    color: #166534;
-    background: #dcfce7;
-}
-
 .page-message.error {
     color: #991b1b;
     background: #fee2e2;
+    border-color: #fecaca;
 }
-
 
 /* =========================================
    PREDICTION LAYOUT
@@ -661,5 +654,269 @@ a:focus-visible {
 
     .form-actions .btn {
         width: 100%;
+    }
+}
+#predictionHistorySection {
+    margin-top: 35px;
+}
+
+/* FILTER CARD */
+
+.history-filter-card,
+.history-table-card,
+.history-details-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+}
+
+.history-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.history-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+/* TABLE */
+
+.history-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.history-table-header h3,
+.history-explanation-section h3 {
+    color: var(--navy);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.history-table-header span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.history-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+.history-table th,
+.history-table td {
+    padding: 13px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.history-table th {
+    background: #f8fafc;
+    color: #374151;
+    font-weight: 700;
+}
+
+.history-table td {
+    color: var(--text);
+}
+
+.history-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.history-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.history-table .history-empty-cell {
+    text-align: center;
+    padding: 28px;
+    color: var(--muted);
+}
+
+/* HISTORY STATUS LABELS */
+
+.history-risk,
+.history-prediction {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.history-risk.low {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.history-risk.medium {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.history-risk.high {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.history-prediction.legitimate {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.history-prediction.fraud {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+/* TABLE ACTION */
+
+.history-view-button {
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.history-view-button:hover {
+    text-decoration: underline;
+}
+
+/* PAGINATION */
+
+.history-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.history-pagination span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.history-pagination-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* DETAILS */
+
+.history-details-card[hidden] {
+    display: none;
+}
+
+.history-details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    padding: 20px 0;
+}
+
+.history-explanation-section {
+    margin-top: 18px;
+}
+
+.history-explanation-section > p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 9px 0 18px;
+}
+
+/* SHAP IMPACT */
+
+.history-impact {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.history-impact.positive {
+    color: var(--danger);
+}
+
+.history-impact.negative {
+    color: var(--success);
+}
+
+/* RESPONSIVE HISTORY LAYOUT */
+
+@media (max-width: 1100px) {
+    .history-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .history-details-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .history-filter-card,
+    .history-table-card,
+    .history-details-card {
+        padding: 16px;
+    }
+
+    .history-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .history-filter-actions {
+        flex-direction: column-reverse;
+    }
+
+    .history-filter-actions .btn {
+        width: 100%;
+    }
+
+    .history-table-header,
+    .history-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .history-pagination-actions {
+        width: 100%;
+    }
+
+    .history-pagination-actions .btn {
+        flex: 1;
+    }
+
+    .history-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #predictionHistorySection > .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
     }
 }

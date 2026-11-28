@@ -10,6 +10,39 @@
     // Use relative URL because Nginx proxies /api/ to Spring Boot.
     const API_BASE_URL = "/api/v1";
 
+    function buildApiUrl(endpoint) {
+    if (typeof endpoint !== "string" || !endpoint.trim()) {
+        throw new ApiError("Invalid API endpoint.", 0, null);
+    }
+
+    const url = new URL(
+        endpoint.startsWith("http")
+            ? endpoint
+            : `${API_BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`,
+        window.location.origin
+    );
+
+    if (url.origin !== window.location.origin) {
+        throw new ApiError(
+            "Cross-origin API requests are not allowed.",
+            0,
+            null
+        );
+    }
+
+    return url.toString();
+}
+
+    function getCsrfToken() {
+    const cookie = document.cookie
+        .split("; ")
+        .find(row => row.startsWith("XSRF-TOKEN="));
+
+    return cookie
+        ? decodeURIComponent(cookie.substring("XSRF-TOKEN=".length))
+        : null;
+}
+
     /**
      * Custom API Error
      */
@@ -42,13 +75,12 @@
     /**
      * Main request handler.
      */
-    async function request(endpoint, options = {}) {
-        const url = endpoint.startsWith("http")
-            ? endpoint
-            : `${API_BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
+   
+async function request(endpoint, options = {}) {
+    try {
+        const url = buildApiUrl(endpoint);
 
         const headers = new Headers(options.headers || {});
-
         const isFormData = options.body instanceof FormData;
 
         if (options.body && !isFormData && !headers.has("Content-Type")) {
@@ -59,49 +91,86 @@
             headers.set("Accept", "application/json");
         }
 
+        const method = (options.method || "GET").toUpperCase();
+        const unsafeMethods = ["POST", "PUT", "PATCH", "DELETE"];
+
+        if (unsafeMethods.includes(method)) {
+            let csrfToken = getCsrfToken();
+
+            if (!csrfToken) {
+                const csrfResponse = await fetch(
+                    `${API_BASE_URL}/auth/csrf`,
+                    {
+                        method: "GET",
+                        credentials: "include"
+                    }
+                );
+
+                if (!csrfResponse.ok) {
+                    throw new ApiError(
+                        "Unable to initialize CSRF protection. Please refresh the page.",
+                        csrfResponse.status,
+                        null
+                    );
+                }
+
+                csrfToken = getCsrfToken();
+            }
+
+            if (!csrfToken) {
+                throw new ApiError(
+                    "Unable to obtain CSRF security token. Please refresh the page.",
+                    0,
+                    null
+                );
+            }
+
+            headers.set("X-XSRF-TOKEN", csrfToken);
+        }
+
         const config = {
             ...options,
             headers,
             credentials: "include"
         };
 
-        try {
-            const response = await fetch(url, config);
-            const data = await parseResponse(response);
+        const response = await fetch(url, config);
+        const data = await parseResponse(response);
 
-            if (!response.ok) {
-                const message =
-                    typeof data === "object" && data !== null
-                        ? data.message || data.error || `Request failed (${response.status})`
-                        : data || `Request failed (${response.status})`;
+        if (!response.ok) {
+            const message =
+                typeof data === "object" && data !== null
+                    ? data.message || data.error || `Request failed (${response.status})`
+                    : data || `Request failed (${response.status})`;
 
-                if (response.status === 401) {
-                    window.dispatchEvent(
-                        new CustomEvent("creditguard:unauthorized")
-                    );
-                }
-
-                throw new ApiError(
-                    String(message),
-                    response.status,
-                    data
+            if (response.status === 401) {
+                window.dispatchEvent(
+                    new CustomEvent("creditguard:unauthorized")
                 );
             }
 
-            return data;
-
-        } catch (error) {
-            if (error instanceof ApiError) {
-                throw error;
-            }
-
             throw new ApiError(
-                error.message || "Unable to connect to the server.",
-                0,
-                null
+                String(message),
+                response.status,
+                data
             );
         }
+
+        return data;
+
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+
+        throw new ApiError(
+            error.message || "Unable to connect to the server.",
+            0,
+            null
+        );
     }
+}
+
 
     /**
      * GET request
@@ -138,6 +207,16 @@
     }
 
     /**
+ * PUT request
+ */
+function put(endpoint, body, options = {}) {
+    return request(endpoint, {
+        ...options,
+        method: "PUT",
+        body: JSON.stringify(body)
+    });
+}
+    /**
      * DELETE request
      */
     function remove(endpoint, options = {}) {
@@ -167,9 +246,7 @@
      * Download a file.
      */
     async function download(endpoint, filename, options = {}) {
-        const url = endpoint.startsWith("http")
-            ? endpoint
-            : `${API_BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
+        const url = buildApiUrl(endpoint);
 
         try {
             const response = await fetch(url, {
@@ -179,18 +256,24 @@
             });
 
             if (!response.ok) {
-                const data = await parseResponse(response);
-                const message =
-                    typeof data === "object" && data !== null
-                        ? data.message || data.error || "File download failed."
-                        : data || "File download failed.";
+    const data = await parseResponse(response);
+    const message =
+        typeof data === "object" && data !== null
+            ? data.message || data.error || "File download failed."
+            : data || "File download failed.";
 
-                throw new ApiError(
-                    String(message),
-                    response.status,
-                    data
-                );
-            }
+    if (response.status === 401) {
+        window.dispatchEvent(
+            new CustomEvent("creditguard:unauthorized")
+        );
+    }
+
+    throw new ApiError(
+        String(message),
+        response.status,
+        data
+    );
+}
 
             const blob = await response.blob();
             const objectUrl = URL.createObjectURL(blob);
@@ -225,6 +308,7 @@
         get,
         post,
         patch,
+        put,
         delete: remove,
         upload,
         download,

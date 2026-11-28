@@ -1,3 +1,4 @@
+
 // ==========================================
 // CreditGuard - Dashboard JavaScript
 // File: Frontend/dashboard/dashboard.js
@@ -10,49 +11,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // --------------------------------------
 
     const API_BASE = "/api/v1";
-
-    const SUMMARY_API = `${API_BASE}/dashboard/summary`;
-    const MODELS_API = `${API_BASE}/models`;
+    const SUMMARY_API = `${API_BASE}/analytics/dashboard/summary`;
+    const ML_HEALTH_API = `${API_BASE}/health/ml`;
 
     // --------------------------------------
     // DOM Elements
     // --------------------------------------
 
-    const totalTransactions =
-        document.getElementById("totalTransactions");
+    const totalTransactions = document.getElementById("totalTransactions");
+    const fraudPercentage = document.getElementById("fraudPercentage");
+    const highRiskTransactions = document.getElementById("highRiskTransactions");
+    const mediumRiskTransactions = document.getElementById("mediumRiskTransactions");
+    const lowRiskTransactions = document.getElementById("lowRiskTransactions");
 
-    const highRiskTransactions =
-        document.getElementById("highRiskTransactions");
+    const recentTransactionsBody = document.getElementById("recentTransactionsBody");
+    const currencySummaryBody = document.getElementById("currencySummaryBody");
 
-    const mediumRiskTransactions =
-        document.getElementById("mediumRiskTransactions");
+    const dashboardMessage = document.getElementById("dashboardMessage");
+    const refreshButton = document.getElementById("refreshButton");
+    const dateRange = document.getElementById("dateRange");
 
-    const lowRiskTransactions =
-        document.getElementById("lowRiskTransactions");
-
-    const recentTransactionsBody =
-        document.getElementById("recentTransactionsBody");
-
-    const dashboardMessage =
-        document.getElementById("dashboardMessage");
-
-    const refreshButton =
-        document.getElementById("refreshButton");
-
-    const dateRange =
-        document.getElementById("dateRange");
-
-    const backendStatus =
-        document.getElementById("backendStatus");
-
-    const mlStatus =
-        document.getElementById("mlStatus");
-
-    const modelVersion =
-        document.getElementById("modelVersion");
-
-    const modelStatus =
-        document.getElementById("modelStatus");
+    const backendStatus = document.getElementById("backendStatus");
+    const mlStatus = document.getElementById("mlStatus");
+    const modelVersion = document.getElementById("modelVersion");
+    const modelStatus = document.getElementById("modelStatus");
 
     let trendChart = null;
     let riskChart = null;
@@ -65,11 +47,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return Number(value ?? 0).toLocaleString("en-IN");
     }
 
-    function formatAmount(value) {
-        return "₹" + Number(value ?? 0).toLocaleString("en-IN", {
+    function formatAmount(value, currency = "INR") {
+        const amount = Number(value ?? 0);
+
+        return `${currency} ${amount.toLocaleString("en-IN", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
-        });
+        })}`;
     }
 
     function formatDate(value) {
@@ -118,6 +102,40 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --------------------------------------
+    // Date Range
+    // --------------------------------------
+
+    function getDateFilters() {
+        const selectedRange = dateRange.value;
+        const now = new Date();
+
+        if (selectedRange === "all") {
+            return {};
+        }
+
+        let startDate = new Date(now);
+
+        if (selectedRange === "today") {
+            startDate.setHours(0, 0, 0, 0);
+        } else {
+            const days = {
+                "7d": 7,
+                "30d": 30,
+                "90d": 90
+            };
+
+            startDate.setDate(
+                startDate.getDate() - (days[selectedRange] || 7)
+            );
+        }
+
+        return {
+            start_time: startDate.toISOString(),
+            end_time: now.toISOString()
+        };
+    }
+
+    // --------------------------------------
     // Current Date
     // --------------------------------------
 
@@ -125,12 +143,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const currentDate = document.getElementById("currentDate");
 
         if (currentDate) {
-            currentDate.textContent =
-                new Date().toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric"
-                });
+            currentDate.textContent = new Date().toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+            });
         }
     }
 
@@ -138,52 +155,42 @@ document.addEventListener("DOMContentLoaded", function () {
     // Fetch Dashboard Summary
     // --------------------------------------
 
-    async function fetchDashboardSummary() {
+   
+async function fetchDashboardSummary() {
+    const responseData = await CreditGuardAPI.post(
+        "analytics/dashboard/summary",
+        getDateFilters()
+    );
 
-        const response = await fetch(SUMMARY_API, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "Accept": "application/json"
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(
-                `Dashboard API error: ${response.status}`
-            );
-        }
-
-        return await response.json();
+    if (!responseData.data) {
+        throw new Error("Invalid dashboard API response.");
     }
+
+    return responseData.data;
+}
+
 
     // --------------------------------------
     // Update Statistics
     // --------------------------------------
 
     function updateStatistics(data) {
+        const total = Number(data.total_transactions ?? 0);
+        const fraudCount = Number(data.predicted_fraud_transactions ?? 0);
 
-        const summary = data.summary || data;
+        const risk = data.risk_distribution || {};
 
-        totalTransactions.textContent = formatNumber(
-            summary.totalTransactions ??
-            summary.totalTransactionCount
-        );
+        totalTransactions.textContent = formatNumber(total);
 
-        highRiskTransactions.textContent = formatNumber(
-            summary.highRiskTransactions ??
-            summary.highRiskCount
-        );
+        const percentage = total > 0
+            ? (fraudCount / total) * 100
+            : 0;
 
-        mediumRiskTransactions.textContent = formatNumber(
-            summary.mediumRiskTransactions ??
-            summary.mediumRiskCount
-        );
+        fraudPercentage.textContent = `${percentage.toFixed(2)}%`;
 
-        lowRiskTransactions.textContent = formatNumber(
-            summary.lowRiskTransactions ??
-            summary.lowRiskCount
-        );
+        highRiskTransactions.textContent = formatNumber(risk.HIGH ?? 0);
+        mediumRiskTransactions.textContent = formatNumber(risk.MEDIUM ?? 0);
+        lowRiskTransactions.textContent = formatNumber(risk.LOW ?? 0);
     }
 
     // --------------------------------------
@@ -191,18 +198,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // --------------------------------------
 
     function renderTransactionTrend(data) {
-
-        const canvas = document.getElementById(
-            "transactionTrendChart"
-        );
-
+        const canvas = document.getElementById("transactionTrendChart");
         const emptyMessage = document.getElementById("trendEmpty");
 
-        const trendData = getArray(
-            data.transactionTrend ||
-            data.trend ||
-            data.dailyTransactions
-        );
+        const trendData = getArray(data.daily_trend);
 
         if (!trendData.length) {
             if (trendChart) {
@@ -218,17 +217,10 @@ document.addEventListener("DOMContentLoaded", function () {
         canvas.hidden = false;
         emptyMessage.hidden = true;
 
-        const labels = trendData.map(item =>
-            item.date || item.label || item.period || ""
-        );
+        const labels = trendData.map(item => item.date || "");
 
         const values = trendData.map(item =>
-            Number(
-                item.count ??
-                item.totalTransactions ??
-                item.transactions ??
-                0
-            )
+            Number(item.transaction_count ?? 0)
         );
 
         if (trendChart) {
@@ -239,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
             type: "line",
 
             data: {
-                labels: labels,
+                labels,
 
                 datasets: [{
                     label: "Transactions",
@@ -287,24 +279,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // --------------------------------------
 
     function renderRiskDistribution(data) {
-
-        const canvas = document.getElementById(
-            "riskDistributionChart"
-        );
-
+        const canvas = document.getElementById("riskDistributionChart");
         const emptyMessage = document.getElementById("riskEmpty");
 
-        const low = Number(
-            data.lowRiskTransactions ?? data.lowRiskCount ?? 0
-        );
+        const distribution = data.risk_distribution || {};
 
-        const medium = Number(
-            data.mediumRiskTransactions ?? data.mediumRiskCount ?? 0
-        );
-
-        const high = Number(
-            data.highRiskTransactions ?? data.highRiskCount ?? 0
-        );
+        const low = Number(distribution.LOW ?? 0);
+        const medium = Number(distribution.MEDIUM ?? 0);
+        const high = Number(distribution.HIGH ?? 0);
 
         if (low + medium + high === 0) {
             if (riskChart) {
@@ -325,15 +307,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         riskChart = new Chart(canvas, {
-
             type: "doughnut",
 
             data: {
-                labels: [
-                    "Low Risk",
-                    "Medium Risk",
-                    "High Risk"
-                ],
+                labels: ["Low Risk", "Medium Risk", "High Risk"],
 
                 datasets: [{
                     data: [low, medium, high],
@@ -351,7 +328,6 @@ document.addEventListener("DOMContentLoaded", function () {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-
                 cutout: "68%",
 
                 plugins: {
@@ -368,17 +344,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // --------------------------------------
 
     function renderRecentTransactions(data) {
-
         recentTransactionsBody.innerHTML = "";
 
         const transactions = getArray(
-            data.recentSuspiciousTransactions ||
-            data.recentTransactions ||
-            data.transactions
+            data.recent_suspicious_transactions
         );
 
         if (!transactions.length) {
-
             const row = document.createElement("tr");
             const cell = document.createElement("td");
 
@@ -388,56 +360,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
             row.appendChild(cell);
             recentTransactionsBody.appendChild(row);
-
             return;
         }
 
         transactions.forEach(transaction => {
-
             const row = document.createElement("tr");
 
-            const transactionId =
-                transaction.transactionId ??
-                transaction.id ??
-                "N/A";
-
-            const date =
-                transaction.transactionDate ??
-                transaction.createdAt ??
-                transaction.timestamp;
-
-            const amount = transaction.amount ?? 0;
-
-            const score =
-                transaction.riskScore ??
-                transaction.score ??
-                0;
-
-            const risk = String(
-                transaction.riskLevel ??
-                transaction.risk ??
-                "Unknown"
-            ).toLowerCase();
-
-            const status =
-                transaction.status ??
-                "Pending Review";
+            const riskScore = Number(transaction.risk_score ?? 0) * 100;
+            const risk = String(transaction.risk_level ?? "UNKNOWN").toLowerCase();
 
             const values = [
-                transactionId,
-                formatDate(date),
-                formatAmount(amount),
-                `${Number(score).toFixed(2)}%`,
-                risk,
-                status
+                transaction.transaction_id ?? "N/A",
+                formatDate(transaction.transaction_time),
+                formatAmount(transaction.amount, transaction.currency),
+                `${riskScore.toFixed(2)}%`,
+                risk.toUpperCase(),
+                Number(transaction.predicted_fraud) === 1
+                    ? "Predicted Fraud"
+                    : "High Risk"
             ];
 
             values.forEach((value, index) => {
-
                 const cell = document.createElement("td");
 
                 if (index === 4) {
-
                     const badge = document.createElement("span");
 
                     badge.textContent = value;
@@ -452,7 +398,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                     cell.appendChild(badge);
-
                 } else {
                     cell.textContent = value;
                 }
@@ -465,35 +410,72 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --------------------------------------
+    // Currency Summary
+    // --------------------------------------
+
+    function renderCurrencySummary(data) {
+        currencySummaryBody.innerHTML = "";
+
+        const summary = data.currency_summary || {};
+        const currencies = Object.entries(summary);
+
+        if (!currencies.length) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+
+            cell.colSpan = 4;
+            cell.className = "empty-state";
+            cell.textContent = "No currency summary available.";
+
+            row.appendChild(cell);
+            currencySummaryBody.appendChild(row);
+            return;
+        }
+
+        currencies.forEach(([currency, details]) => {
+            const row = document.createElement("tr");
+
+            const values = [
+                currency,
+                formatNumber(details.transaction_count),
+                formatAmount(details.total_amount, currency),
+                formatAmount(details.average_transaction_amount, currency)
+            ];
+
+            values.forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+
+            currencySummaryBody.appendChild(row);
+        });
+    }
+
+    // --------------------------------------
     // Load Dashboard
     // --------------------------------------
 
     async function loadDashboard() {
-
         refreshButton.disabled = true;
         refreshButton.textContent = "Loading...";
 
         showMessage("Loading dashboard data...", "info");
 
         try {
-
             const data = await fetchDashboardSummary();
 
             updateStatistics(data);
             renderTransactionTrend(data);
             renderRiskDistribution(data);
             renderRecentTransactions(data);
+            renderCurrencySummary(data);
 
-            setStatus(
-                backendStatus,
-                "Connected",
-                "status-online"
-            );
+            setStatus(backendStatus, "Connected", "status-online");
 
             hideMessage();
 
         } catch (error) {
-
             console.error("Dashboard Error:", error);
 
             showMessage(
@@ -501,14 +483,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 "error"
             );
 
-            setStatus(
-                backendStatus,
-                "Unavailable",
-                "status-offline"
-            );
+            setStatus(backendStatus, "Unavailable", "status-offline");
 
         } finally {
-
             refreshButton.disabled = false;
             refreshButton.textContent = "↻ Refresh";
         }
@@ -518,82 +495,56 @@ document.addEventListener("DOMContentLoaded", function () {
     // Fetch Model Information
     // --------------------------------------
 
-    async function loadModelInformation() {
+    // --------------------------------------
+// Fetch ML Service Health and Model Information
+// --------------------------------------
 
-        try {
+async function loadModelInformation() {
+    try {
+        const data = await CreditGuardAPI.get("health/ml");
 
-            const response = await fetch(MODELS_API, {
-                method: "GET",
-                credentials: "include",
-                headers: {
-                    "Accept": "application/json"
-                }
-            });
+        const isUp = String(data.status).toUpperCase() === "UP";
+        const isLoaded = data.model_loaded === true;
 
-            if (!response.ok) {
-                throw new Error("Unable to fetch model information.");
-            }
-
-            const data = await response.json();
-
-            const models = Array.isArray(data)
-                ? data
-                : data.models || [];
-
-            const activeModel =
-                models.find(model =>
-                    model.active === true ||
-                    model.isActive === true ||
-                    String(model.status || "").toLowerCase() === "active"
-                ) || models[0];
-
-            if (!activeModel) {
-
-                modelVersion.textContent = "Not available";
-                modelStatus.textContent = "No model information";
-
-                setStatus(
-                    mlStatus,
-                    "Not reported",
-                    "status-unknown"
-                );
-
-                return;
-            }
-
-            modelVersion.textContent =
-                activeModel.version ??
-                activeModel.modelVersion ??
-                activeModel.name ??
-                "N/A";
-
-            modelStatus.textContent =
-                activeModel.status ??
-                (activeModel.active ? "Active" : "Available");
-
-            setStatus(
-                mlStatus,
-                "Model information available",
-                "status-online"
-            );
-
-        } catch (error) {
-
-            console.error("Model API Error:", error);
-
-            modelVersion.textContent = "Unavailable";
-            modelStatus.textContent = "Unavailable";
-
-            setStatus(
-                mlStatus,
-                "Not reported",
-                "status-unknown"
-            );
+        // ML Service Status
+        if (isUp) {
+            setStatus(mlStatus, "Connected", "status-online");
+        } else {
+            setStatus(mlStatus, "Degraded", "status-offline");
         }
+
+        // Model Version
+        modelVersion.textContent =
+            data.model_version ?? "Unavailable";
+
+        // Model Loading Status
+        modelStatus.textContent = isLoaded
+            ? "Loaded"
+            : "Not Loaded";
+
+        // Show threshold if the dashboard has an element for it
+        const modelThreshold =
+            document.getElementById("modelThreshold");
+
+        if (modelThreshold) {
+            modelThreshold.textContent =
+                data.prediction_threshold != null
+                    ? `${(Number(data.prediction_threshold) * 100).toFixed(0)}%`
+                    : "Unavailable";
+        }
+
+    } catch (error) {
+        console.error("ML Health API Error:", error);
+
+        modelVersion.textContent = "Unavailable";
+        modelStatus.textContent = "Unavailable";
+
+        setStatus(mlStatus, "Unavailable", "status-offline");
     }
+}
 
     // --------------------------------------
-    // Refresh Dashboard
+    // Event Listeners
     // --------------------------------------
 
     refreshButton.addEventListener("click", function () {
@@ -601,18 +552,8 @@ document.addEventListener("DOMContentLoaded", function () {
         loadModelInformation();
     });
 
-    // --------------------------------------
-    // Date Range Selection
-    // --------------------------------------
-
     dateRange.addEventListener("change", function () {
-
-        showMessage(
-            "The selected range is " + this.options[this.selectedIndex].text +
-            ". Date-range filtering requires backend API support.",
-            "info"
-        );
-
+        loadDashboard();
     });
 
     // --------------------------------------

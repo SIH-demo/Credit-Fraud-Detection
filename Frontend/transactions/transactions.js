@@ -13,9 +13,11 @@
     const PAGE_SIZE = 10;
 
     let transactions = [];
-    let filteredTransactions = [];
-    let currentPage = 1;
+    let currentPage = 0;
+    let totalPages = 0;
+    let totalElements = 0;
     let isLoading = false;
+    let searchTimer = null;
 
     // ---------- DOM Elements ----------
 
@@ -74,7 +76,7 @@
         try {
             return new Intl.NumberFormat("en-IN", {
                 style: "currency",
-                currency: currency,
+                currency,
                 maximumFractionDigits: 2
             }).format(value);
         } catch {
@@ -102,13 +104,7 @@
 
     function getScore(transaction) {
         const score = Number(
-            getValue(
-                transaction,
-                "riskScore",
-                "risk_score",
-                "predictionScore",
-                "score"
-            )
+            getValue(transaction, "riskScore", "risk_score")
         );
 
         return Number.isFinite(score) && score >= 0 && score <= 1
@@ -123,38 +119,18 @@
             "risk_level"
         );
 
-        if (suppliedLevel) {
-            return String(suppliedLevel).toUpperCase();
-        }
-
-        const score = getScore(transaction);
-
-        if (score === null) return "UNKNOWN";
-
-        // Illustrative display bands only.
-        if (score < 0.30) return "LOW";
-        if (score < 0.70) return "MEDIUM";
-
-        return "HIGH";
+        return suppliedLevel
+            ? String(suppliedLevel).toUpperCase()
+            : "UNKNOWN";
     }
 
     function getTransactionId(transaction) {
-        return getValue(
-            transaction,
-            "id",
-            "transactionId",
-            "transaction_id"
-        );
+        return getValue(transaction, "id", "transactionId", "transaction_id");
     }
 
     function getStatus(transaction) {
         return String(
-            getValue(
-                transaction,
-                "status",
-                "transactionStatus",
-                "transaction_status"
-            ) || "UNKNOWN"
+            getValue(transaction, "status", "transactionStatus") || "UNKNOWN"
         ).toUpperCase();
     }
 
@@ -175,30 +151,25 @@
         elements.message.textContent = "";
     }
 
-    // ---------- Response Normalization ----------
+    // ---------- Query Parameters ----------
 
-    function normalizeResponse(response) {
-        if (Array.isArray(response)) {
-            return response;
-        }
+    function buildQueryString() {
+        const params = new URLSearchParams();
 
-        if (Array.isArray(response?.content)) {
-            return response.content;
-        }
+        params.set("page", String(currentPage));
+        params.set("size", String(PAGE_SIZE));
 
-        if (Array.isArray(response?.transactions)) {
-            return response.transactions;
-        }
+        const search = elements.search?.value.trim();
+        const risk = elements.riskFilter?.value;
+        const status = elements.statusFilter?.value;
+        const currency = elements.currencyFilter?.value;
 
-        if (Array.isArray(response?.data)) {
-            return response.data;
-        }
+        if (search) params.set("search", search);
+        if (risk) params.set("riskLevel", risk);
+        if (status) params.set("status", status);
+        if (currency) params.set("currency", currency);
 
-        if (Array.isArray(response?.data?.transactions)) {
-            return response.data.transactions;
-        }
-
-        return null;
+        return params.toString();
     }
 
     // ---------- Load Transactions ----------
@@ -214,6 +185,8 @@
             elements.refresh.textContent = "Loading...";
         }
 
+        updatePaginationButtons();
+
         if (elements.tableBody) {
             elements.tableBody.innerHTML = `
                 <tr>
@@ -225,29 +198,32 @@
         }
 
         try {
-            const response = await CreditGuardAPI.get(API_ENDPOINT);
+            const query = buildQueryString();
 
-            const data = normalizeResponse(response);
+            const response = await CreditGuardAPI.get(
+                `${API_ENDPOINT}?${query}`
+            );
 
-            if (!data) {
-                throw new Error(
-                    "Unexpected transaction API response format."
-                );
+            if (!response || !Array.isArray(response.data)) {
+                throw new Error("Unexpected transaction API response format.");
             }
 
-            transactions = data;
-            currentPage = 1;
+            transactions = response.data;
+            currentPage = Number(response.page ?? currentPage);
+            totalPages = Number(response.totalPages ?? 0);
+            totalElements = Number(response.totalElements ?? 0);
 
-            updateStatistics();
-            applyFilters();
+            updateStatistics(response.summary);
+            renderTransactions();
 
         } catch (error) {
             console.error("Transaction loading error:", error);
 
             transactions = [];
-            filteredTransactions = [];
+            totalPages = 0;
+            totalElements = 0;
 
-            updateStatistics();
+            updateStatistics(null);
 
             if (elements.tableBody) {
                 elements.tableBody.innerHTML = `
@@ -278,106 +254,35 @@
                 elements.refresh.disabled = false;
                 elements.refresh.textContent = "Refresh";
             }
+
+            updatePaginationButtons();
         }
     }
 
     // ---------- Statistics ----------
 
-    function updateStatistics() {
-        const total = transactions.length;
-
-        const fraud = transactions.filter(transaction => {
-            const level = getRiskLevel(transaction);
-
-            return level === "HIGH" ||
-                String(getValue(transaction, "predictionLabel", "prediction_label") || "")
-                    .toUpperCase() === "FRAUD";
-        }).length;
-
-        const low = transactions.filter(
-            transaction => getRiskLevel(transaction) === "LOW"
-        ).length;
-
-        const high = transactions.filter(
-            transaction => getRiskLevel(transaction) === "HIGH"
-        ).length;
+    function updateStatistics(summary) {
+        const values = summary || {};
 
         if (elements.total) {
-            elements.total.textContent = total.toLocaleString("en-IN");
+            elements.total.textContent =
+                Number(values.totalTransactions || 0).toLocaleString("en-IN");
         }
 
         if (elements.fraud) {
-            elements.fraud.textContent = fraud.toLocaleString("en-IN");
+            elements.fraud.textContent =
+                Number(values.fraudTransactions || 0).toLocaleString("en-IN");
         }
 
         if (elements.lowRisk) {
-            elements.lowRisk.textContent = low.toLocaleString("en-IN");
+            elements.lowRisk.textContent =
+                Number(values.lowRiskTransactions || 0).toLocaleString("en-IN");
         }
 
         if (elements.highRisk) {
-            elements.highRisk.textContent = high.toLocaleString("en-IN");
+            elements.highRisk.textContent =
+                Number(values.highRiskTransactions || 0).toLocaleString("en-IN");
         }
-    }
-
-    // ---------- Search and Filters ----------
-
-    function applyFilters() {
-        const searchTerm = (
-            elements.search?.value || ""
-        ).trim().toLowerCase();
-
-        const selectedRisk = elements.riskFilter?.value || "";
-        const selectedStatus = elements.statusFilter?.value || "";
-        const selectedCurrency = elements.currencyFilter?.value || "";
-
-        filteredTransactions = transactions.filter(transaction => {
-
-            const id = String(
-                getTransactionId(transaction) || ""
-            ).toLowerCase();
-
-            const reference = String(
-                getValue(
-                    transaction,
-                    "externalReference",
-                    "external_reference"
-                ) || ""
-            ).toLowerCase();
-
-            const merchant = String(
-                getValue(transaction, "merchant") || ""
-            ).toLowerCase();
-
-            const matchesSearch =
-                !searchTerm ||
-                id.includes(searchTerm) ||
-                reference.includes(searchTerm) ||
-                merchant.includes(searchTerm);
-
-            const matchesRisk =
-                !selectedRisk ||
-                getRiskLevel(transaction) === selectedRisk;
-
-            const matchesStatus =
-                !selectedStatus ||
-                getStatus(transaction) === selectedStatus;
-
-            const currency = String(
-                getValue(transaction, "currency") || ""
-            ).toUpperCase();
-
-            const matchesCurrency =
-                !selectedCurrency ||
-                currency === selectedCurrency;
-
-            return matchesSearch &&
-                matchesRisk &&
-                matchesStatus &&
-                matchesCurrency;
-        });
-
-        currentPage = 1;
-        renderTransactions();
     }
 
     // ---------- Risk Badge ----------
@@ -390,10 +295,8 @@
             UNKNOWN: "badge-neutral"
         };
 
-        const badgeClass = classes[level] || "badge-neutral";
-
         return `
-            <span class="badge ${badgeClass}">
+            <span class="badge ${classes[level] || "badge-neutral"}">
                 ${escapeHTML(level)}
             </span>
         `;
@@ -408,10 +311,8 @@
             FAILED: "badge-danger"
         };
 
-        const badgeClass = classes[status] || "badge-neutral";
-
         return `
-            <span class="badge ${badgeClass}">
+            <span class="badge ${classes[status] || "badge-neutral"}">
                 ${escapeHTML(status)}
             </span>
         `;
@@ -422,7 +323,7 @@
     function renderTransactions() {
         if (!elements.tableBody) return;
 
-        if (filteredTransactions.length === 0) {
+        if (transactions.length === 0) {
             elements.tableBody.innerHTML = `
                 <tr>
                     <td colspan="8" class="empty-state">
@@ -431,37 +332,33 @@
                 </tr>
             `;
 
-            updatePaginationButtons();
-
             if (elements.paginationInfo) {
                 elements.paginationInfo.textContent =
                     "Showing 0 transactions";
             }
 
+            updatePaginationButtons();
             return;
         }
 
-        const startIndex = (currentPage - 1) * PAGE_SIZE;
-
-        const pageTransactions = filteredTransactions.slice(
-            startIndex,
-            startIndex + PAGE_SIZE
-        );
-
-        elements.tableBody.innerHTML = pageTransactions.map(transaction => {
-
+        elements.tableBody.innerHTML = transactions.map(transaction => {
             const id = getTransactionId(transaction);
 
             const reference = getValue(
                 transaction,
+                "transactionReference",
                 "externalReference",
                 "external_reference"
             );
 
-            const merchant = getValue(transaction, "merchant") || "--";
+            const merchant = getValue(
+                transaction,
+                "merchantName",
+                "merchant",
+                "merchant_name"
+            ) || "--";
 
             const amount = getValue(transaction, "amount");
-
             const currency = getValue(transaction, "currency") || "INR";
 
             const date = getValue(
@@ -473,9 +370,7 @@
             );
 
             const score = getScore(transaction);
-
             const riskLevel = getRiskLevel(transaction);
-
             const status = getStatus(transaction);
 
             const riskScore = score === null
@@ -488,24 +383,13 @@
 
             return `
                 <tr>
-                    <td>
-                        ${escapeHTML(reference || id || "--")}
-                    </td>
-
+                    <td>${escapeHTML(reference || id || "--")}</td>
                     <td>${escapeHTML(merchant)}</td>
-
-                    <td>
-                        ${escapeHTML(formatAmount(amount, currency))}
-                    </td>
-
+                    <td>${escapeHTML(formatAmount(amount, currency))}</td>
                     <td>${formatDate(date)}</td>
-
                     <td>${escapeHTML(riskScore)}</td>
-
                     <td>${getRiskBadge(riskLevel)}</td>
-
                     <td>${getStatusBadge(status)}</td>
-
                     <td>
                         ${
                             id !== null
@@ -518,7 +402,6 @@
                     </td>
                 </tr>
             `;
-
         }).join("");
 
         updatePaginationInfo();
@@ -530,53 +413,51 @@
     function updatePaginationInfo() {
         if (!elements.paginationInfo) return;
 
-        const total = filteredTransactions.length;
-
-        const start = total === 0
+        const start = totalElements === 0
             ? 0
-            : (currentPage - 1) * PAGE_SIZE + 1;
+            : currentPage * PAGE_SIZE + 1;
 
         const end = Math.min(
-            currentPage * PAGE_SIZE,
-            total
+            (currentPage + 1) * PAGE_SIZE,
+            totalElements
         );
 
         elements.paginationInfo.textContent =
-            `Showing ${start}-${end} of ${total} transactions`;
+            `Showing ${start}-${end} of ${totalElements} transactions`;
     }
 
     function updatePaginationButtons() {
-        const totalPages = Math.ceil(
-            filteredTransactions.length / PAGE_SIZE
-        );
-
         if (elements.previous) {
-            elements.previous.disabled =
-                currentPage <= 1 || isLoading;
+            elements.previous.disabled = currentPage <= 0 || isLoading;
         }
 
         if (elements.next) {
             elements.next.disabled =
-                currentPage >= totalPages || isLoading;
+                currentPage >= totalPages - 1 || totalPages === 0 || isLoading;
         }
     }
 
     function previousPage() {
-        if (currentPage > 1) {
+        if (currentPage > 0 && !isLoading) {
             currentPage--;
-            renderTransactions();
+            loadTransactions();
         }
     }
 
     function nextPage() {
-        const totalPages = Math.ceil(
-            filteredTransactions.length / PAGE_SIZE
-        );
-
-        if (currentPage < totalPages) {
+        if (currentPage < totalPages - 1 && !isLoading) {
             currentPage++;
-            renderTransactions();
+            loadTransactions();
         }
+    }
+
+    // ---------- Search and Filters ----------
+
+    function applyFilters() {
+        if (isLoading) return;
+
+        currentPage = 0;
+        loadTransactions();
     }
 
     // ---------- Clear Filters ----------
@@ -587,27 +468,29 @@
         if (elements.statusFilter) elements.statusFilter.value = "";
         if (elements.currencyFilter) elements.currencyFilter.value = "";
 
-        applyFilters();
+        currentPage = 0;
+        loadTransactions();
     }
 
     // ---------- Event Listeners ----------
 
     function initializeEvents() {
+        elements.search?.addEventListener("input", () => {
+            clearTimeout(searchTimer);
 
-        elements.search?.addEventListener("input", applyFilters);
+            searchTimer = setTimeout(() => {
+                applyFilters();
+            }, 300);
+        });
 
         elements.riskFilter?.addEventListener("change", applyFilters);
-
         elements.statusFilter?.addEventListener("change", applyFilters);
-
         elements.currencyFilter?.addEventListener("change", applyFilters);
 
         elements.refresh?.addEventListener("click", loadTransactions);
-
         elements.clearFilters?.addEventListener("click", clearFilters);
 
         elements.previous?.addEventListener("click", previousPage);
-
         elements.next?.addEventListener("click", nextPage);
     }
 
@@ -630,4 +513,3 @@
     document.addEventListener("DOMContentLoaded", init);
 
 })();
-
