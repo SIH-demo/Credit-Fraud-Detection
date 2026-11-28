@@ -505,11 +505,14 @@
                 <div class="details-grid">
 
                     <div class="form-group">
-                        <label for="assignedTo">Assign Analyst</label>
-                        <select id="assignedTo" name="assignedTo">
-                            <option value="">Select Analyst</option>
-                        </select>
-                    </div>
+    <label for="assignedTo">Assign Analyst</label>
+    <input
+        type="text"
+        id="assignedTo"
+        name="assignedTo"
+        placeholder="Enter analyst name"
+    >
+</div>
 
                     <div class="form-group">
                         <label for="investigationStatus">Case Status</label>
@@ -593,6 +596,10 @@
     </main>
 
 </div>
+<script src="../shared/js/api.js"></script>
+<script src="../shared/js/session.js"></script>
+<script src="../app.js"></script>
 
+<script src="./investigations-details.js"></script>
 </body>
 </html>

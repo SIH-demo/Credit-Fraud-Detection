@@ -59,9 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
             id: item.id ?? item.investigationId ?? "",
             caseId: item.caseId ?? item.id ?? "",
             transactionId:
-                item.transactionId ??
-                item.transaction?.id ??
-                "—",
+    item.transactionReference ??
+    item.transaction?.transactionReference ??
+    item.transactionId ??
+    item.transaction?.id ??
+    "—",
 
             amount:
                 item.amount ??
@@ -119,21 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
 
-            const response = await fetch(API_URL, {
-                method: "GET",
-                credentials: "include",
-                headers: {
-                    "Accept": "application/json"
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(
-                    `Unable to load investigations. HTTP ${response.status}`
-                );
-            }
-
-            const data = await response.json();
+            const data = await CreditGuardAPI.get("investigations");
 
             // Supports either a direct array or common wrapper.
             const records = Array.isArray(data)

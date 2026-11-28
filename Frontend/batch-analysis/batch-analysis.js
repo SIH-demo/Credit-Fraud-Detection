@@ -60,6 +60,51 @@ document.addEventListener("DOMContentLoaded", function () {
         uploadStatus.hidden = true;
         uploadStatus.textContent = "";
     }
+// --------------------------------------
+// Load latest persisted batch
+// --------------------------------------
+
+async function loadLatestBatch() {
+    try {
+        const responseBody = await CreditGuardAPI.get(
+    `batches?page=0&size=1`
+);
+
+        const data = responseBody.data ?? responseBody;
+        const batches = data.batches ?? [];
+
+        if (batches.length === 0) {
+            latestBatch.innerHTML =
+                "<p>No batches have been uploaded yet.</p>";
+
+            viewResultsLink.hidden = true;
+            return;
+        }
+
+        const batch = batches[0];
+
+        latestBatch.innerHTML = `
+            <p><strong>Batch ID:</strong> ${batch.batchId}</p>
+            <p><strong>Status:</strong> ${batch.status}</p>
+            <p><strong>Total Rows:</strong> ${batch.totalRows}</p>
+            <p><strong>Processed Rows:</strong> ${batch.processedRows}</p>
+            <p><strong>Errors:</strong> ${batch.errorCount}</p>
+        `;
+
+        viewResultsLink.href =
+    "../reports/reports.html?batchId=" +
+    encodeURIComponent(batch.batchId);
+
+        viewResultsLink.hidden = false;
+
+    } catch (error) {
+        latestBatch.innerHTML =
+            "<p>Unable to load the latest batch.</p>";
+
+        viewResultsLink.hidden = true;
+        console.error("Latest batch loading failed:", error);
+    }
+}
 
     // --------------------------------------
     // Format file size
@@ -216,25 +261,15 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
         try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                credentials: "include",
-                body: formData
-            });
-
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                    data.error ||
-                    `Upload failed. Server returned ${response.status}.`
-                );
-            }
+            const data = await CreditGuardAPI.post(
+    "batches",
+    formData
+);
 
             // Expected response field: batchId.
             // Confirm the actual response structure with your backend.
-            const batchId = data.batchId ?? data.id;
+            const batchData = data.data ?? data;
+            const batchId = batchData.batchId ?? batchData.id;
 
             if (!batchId) {
                 throw new Error(
@@ -243,8 +278,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             showStatus(
-                "CSV uploaded successfully. Opening batch results...",
-                "success"
+           `CSV uploaded successfully. ${batchData.totalRows} rows received. Opening batch results...`,
+           "success"
             );
 
             latestBatch.textContent = "Batch ID: " + batchId;
@@ -274,25 +309,17 @@ document.addEventListener("DOMContentLoaded", function () {
             uploadButton.textContent = "Upload and Analyze";
         }
     });
+resetButton.addEventListener("click", function () {
+    currentFile = null;
+    csvFileInput.value = "";
 
-    // --------------------------------------
-    // Reset form
-    // --------------------------------------
+    selectedFile.hidden = true;
+    fileName.textContent = "";
+    fileSize.textContent = "";
 
-    resetButton.addEventListener("click", function () {
-        currentFile = null;
-        csvFileInput.value = "";
+    hideStatus();
+});
 
-        selectedFile.hidden = true;
-        fileName.textContent = "";
-        fileSize.textContent = "";
 
-        latestBatch.textContent =
-            "No batch uploaded in this session.";
-
-        viewResultsLink.hidden = true;
-
-        hideStatus();
-    });
-
+    loadLatestBatch();
 });

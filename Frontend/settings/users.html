@@ -1,6 +1,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,305 +11,100 @@
     <link rel="stylesheet" href="../shared/css/style.css">
     <link rel="stylesheet" href="../shared/css/layout.css">
     <link rel="stylesheet" href="../shared/css/components.css">
-    <link rel="stylesheet" href="settings.css">
 </head>
 
 <body>
 
-<div class="app-container">
-
-    <!-- Sidebar -->
     <aside class="sidebar">
 
         <div class="sidebar-brand">
             <h2>CreditGuard</h2>
-            <span>Fraud Detection System</span>
+            <p>Fraud Detection System</p>
         </div>
 
         <nav class="sidebar-nav">
-            <a href="../dashboard/dashboard.html">Dashboard</a>
-            <a href="../transactions/transactions.html">Transactions</a>
-            <a href="../predictions/prediction.html">Fraud Prediction</a>
-            <a href="../batch-analysis/batch-analysis.html">Batch Analysis</a>
-            <a href="../investigations/investigations.html">Investigations</a>
-            <a href="../model-analytics/model-analytics.html">Model Analytics</a>
-            <a href="../reports/reports.html">Reports</a>
 
-            <div class="sidebar-section">Administration</div>
+            <a href="../dashboard/dashboard.html" class="nav-link">Dashboard</a>
+            <a href="../transactions/transactions.html" class="nav-link">Transactions</a>
+            <a href="../predictions/prediction.html" class="nav-link">Fraud Prediction</a>
+            <a href="../batch-analysis/batch-analysis.html" class="nav-link">Batch Analysis</a>
+            <a href="../investigations/investigations.html" class="nav-link">Investigations</a>
+            <a href="../model-analytics/model-analytics.html" class="nav-link">Model Analytics</a>
+            <a href="../reports/reports.html" class="nav-link">Reports</a>
+            <a href="settings.html" data-role="ADMIN">Settings</a>
 
-            <a href="settings.html">Settings</a>
-            <a href="users.html" class="active">Users</a>
-            <a href="roles.html">Roles & Permissions</a>
-            <a href="audit-logs.html">Audit Logs</a>
-            <a href="risk-configurations.html">Risk Configuration</a>
         </nav>
+
+        <div class="sidebar-footer">
+            <button type="button" class="logout-button">Logout</button>
+        </div>
 
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
 
-        <!-- Topbar -->
         <header class="topbar">
+
+            <button
+                type="button"
+                class="sidebar-toggle"
+                aria-label="Open navigation"
+                aria-expanded="false">
+                ☰
+            </button>
+
             <div>
-                <h2>User Management</h2>
-                <p>Manage CreditGuard system users and their access</p>
+                <h3>User Management</h3>
+                <p>Manage registered CreditGuard users</p>
             </div>
+
+            <div class="user-profile">
+                <span data-user-name>User</span>
+                <small data-user-role>Role</small>
+            </div>
+
         </header>
 
-        <div class="settings-container">
+        <section class="page-content">
 
-            <!-- Page Header -->
             <div class="page-header">
                 <div>
-                    <h1>Users</h1>
-                    <p>Create, manage and control user accounts.</p>
+                    <h1>User Management</h1>
+                    <p>View users and manage their account status.</p>
                 </div>
-
-                <button type="button"
-                        class="btn btn-primary"
-                        id="addUserButton">
-                    + Add New User
-                </button>
             </div>
 
-            <div id="usersMessage"
-                 class="message"
-                 role="status"
-                 aria-live="polite"></div>
+            <p id="usersMessage" role="status">Loading users...</p>
 
-            <!-- Statistics -->
-            <section class="stats-grid">
+            <div class="card">
+                <div class="table-responsive">
 
-                <div class="stat-card">
-                    <p>Total Users</p>
-                    <h3 id="totalUsers">0</h3>
-                </div>
-
-                <div class="stat-card">
-                    <p>Active Users</p>
-                    <h3 id="activeUsers">0</h3>
-                </div>
-
-                <div class="stat-card">
-                    <p>Inactive Users</p>
-                    <h3 id="inactiveUsers">0</h3>
-                </div>
-
-                <div class="stat-card">
-                    <p>Administrators</p>
-                    <h3 id="adminUsers">0</h3>
-                </div>
-
-            </section>
-
-            <!-- Add / Edit User Form -->
-            <section class="settings-card" id="userFormSection">
-
-                <h3 class="section-title" id="userFormTitle">
-                    Add New User
-                </h3>
-
-                <form id="userForm">
-
-                    <input type="hidden" id="userId">
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-                            <label for="fullName">Full Name *</label>
-                            <input type="text"
-                                   id="fullName"
-                                   name="fullName"
-                                   placeholder="Enter full name"
-                                   required
-                                   maxlength="100">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email">Email Address *</label>
-                            <input type="email"
-                                   id="email"
-                                   name="email"
-                                   placeholder="Enter email address"
-                                   required
-                                   maxlength="150">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel"
-                                   id="phone"
-                                   name="phone"
-                                   placeholder="Enter phone number"
-                                   maxlength="20">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="userRole">Assign Role *</label>
-                            <select id="userRole"
-                                    name="userRole"
-                                    required>
-                                <option value="">Select Role</option>
-                                <option value="ADMIN">Administrator</option>
-                                <option value="FRAUD_ANALYST">Fraud Analyst</option>
-                                <option value="INVESTIGATOR">Investigator</option>
-                                <option value="MANAGER">Manager</option>
-                                <option value="VIEWER">Viewer</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="userStatus">Account Status</label>
-                            <select id="userStatus"
-                                    name="userStatus">
-                                <option value="ACTIVE">Active</option>
-                                <option value="INACTIVE">Inactive</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group" id="passwordGroup">
-                            <label for="password">Initial Password *</label>
-                            <input type="password"
-                                   id="password"
-                                   name="password"
-                                   placeholder="Enter initial password"
-                                   minlength="8"
-                                   autocomplete="new-password">
-                            <small>
-                                Password is required when creating a new user.
-                            </small>
-                        </div>
-
-                    </div>
-
-                    <div class="form-actions">
-
-                        <button type="button"
-                                class="btn btn-secondary"
-                                id="cancelUserButton">
-                            Cancel
-                        </button>
-
-                        <button type="submit"
-                                class="btn btn-primary"
-                                id="saveUserButton">
-                            Save User
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </section>
-
-            <!-- User List -->
-            <section class="table-card">
-
-                <h3 class="section-title">All Users</h3>
-
-                <!-- Search and Filters -->
-                <div class="filter-container">
-
-                    <input type="search"
-                           id="userSearch"
-                           placeholder="Search by name or email"
-                           aria-label="Search users">
-
-                    <select id="roleFilter" aria-label="Filter by role">
-                        <option value="">All Roles</option>
-                        <option value="ADMIN">Administrator</option>
-                        <option value="FRAUD_ANALYST">Fraud Analyst</option>
-                        <option value="INVESTIGATOR">Investigator</option>
-                        <option value="MANAGER">Manager</option>
-                        <option value="VIEWER">Viewer</option>
-                    </select>
-
-                    <select id="statusFilter" aria-label="Filter by status">
-                        <option value="">All Status</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">Inactive</option>
-                    </select>
-
-                    <button type="button"
-                            class="btn btn-secondary"
-                            id="refreshUsersButton">
-                        Refresh
-                    </button>
-
-                </div>
-
-                <!-- Users Table -->
-                <div class="table-wrapper">
-
-                    <table class="users-table">
-
+                    <table>
                         <thead>
                             <tr>
-                                <th>User ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Status</th>
-                                <th>Created Date</th>
-                                <th>Actions</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
 
-                        <tbody id="usersTableBody">
-                            <tr>
-                                <td colspan="7">
-                                    No user data loaded. Connect the backend
-                                    to display existing users.
-                                </td>
-                            </tr>
-                        </tbody>
-
+                        <tbody id="usersTableBody"></tbody>
                     </table>
 
                 </div>
+            </div>
 
-                <!-- Pagination -->
-                <div class="pagination">
-
-                    <span class="pagination-info" id="usersPaginationInfo">
-                        Showing 0 users
-                    </span>
-
-                    <div>
-                        <button type="button"
-                                id="previousUsersPage"
-                                disabled>
-                            Previous
-                        </button>
-
-                        <button type="button"
-                                id="nextUsersPage"
-                                disabled>
-                            Next
-                        </button>
-                    </div>
-
-                </div>
-
-            </section>
-
-            <!-- Footer -->
-            <footer class="page-footer">
-                <p>© 2026 CreditGuard | Fraud Detection System</p>
-            </footer>
-
-        </div>
+        </section>
 
     </main>
 
-</div>
-
-<script src="../shared/js/api.js"></script>
-<script src="../shared/js/session.js"></script>
-<script src="../shared/js/navigation.js"></script>
-<script src="users.js"></script>
+    <script src="../shared/js/api.js"></script>
+    <script src="../shared/js/session.js"></script>
+    <script src="../app.js"></script>
+    <script src="../shared/js/navigation.js"></script>
+    <script src="users.js"></script>
 
 </body>
 </html>
-

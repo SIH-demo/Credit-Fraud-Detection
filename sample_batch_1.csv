@@ -1,0 +1,5 @@
+externalReference,amount,currency,transactionTime,merchantName,merchant,step,age,gender,category,country,maskedCardLast4,status
+SAMPLE-BATCH-001,1250.0,INR,2026-11-28T10:15:00+05:30,Amazon India,M2080407379,10,3,M,es_transportation,India,4821,COMPLETED
+SAMPLE-BATCH-002,7800.5,INR,2026-11-28T11:30:00+05:30,Flipkart,M1823072687,12,4,F,es_health,India,1937,COMPLETED
+SAMPLE-BATCH-003,22500.0,INR,2026-11-28T13:45:00+05:30,Retail Store,M3489346000,15,2,M,es_sports,India,6504,COMPLETED
+SAMPLE-BATCH-004,450.0,INR,2026-11-28T14:20:00+05:30,Grocery Store,M8573787200,18,1,F,es_food,India,8274,COMPLETED

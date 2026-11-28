@@ -70,7 +70,7 @@
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 18px;
             margin-bottom: 25px;
         }
@@ -294,6 +294,11 @@
             <h2 id="fraudPercentage">--</h2>
         </div>
 
+        <div class="summary-card">
+    <p>Skipped Duplicates</p>
+    <h2 id="skippedCount">0</h2>
+</div>
+
     </div>
 
     <!-- Risk Distribution -->
@@ -353,232 +358,335 @@
         </table>
 
     </div>
+     <div class="table-container" id="batchErrorsSection" hidden
+         style="margin-top: 25px;">
+
+        <div class="table-header">
+            <h2>Batch Processing Errors</h2>
+            <span id="errorCount">0 errors</span>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>CSV Row Number</th>
+                    <th>Error Description</th>
+                </tr>
+            </thead>
+
+            <tbody id="batchErrorsBody"></tbody>
+        </table>
 
 </div>
 
+<div class="table-container" id="batchSkippedSection" hidden
+     style="margin-top: 25px;">
+
+    <div class="table-header">
+        <h2>Skipped Duplicate Rows</h2>
+        <span id="skippedRowsCount">0 skipped</span>
+    </div>
+
+    <p style="color: #64748b; font-size: 14px;">
+        These rows were not processed again because their external
+        references already exist.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>CSV Row Number</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+
+        <tbody id="batchSkippedBody"></tbody>
+    </table>
+</div>
+
+<script src="../shared/js/api.js"></script>
+<script src="../shared/js/session.js"></script>
+<script src="../app.js"></script>
 <script>
-    const API_BASE = "/api/v1";
-    const params = new URLSearchParams(window.location.search);
-    const batchId = params.get("batchId");
+   
+const API_BASE = "/api/v1";
+const params = new URLSearchParams(window.location.search);
+const batchId = params.get("batchId");
 
-    let batchResults = [];
+let batchResults = [];
+let polling = false;
 
-    const statusMessage = document.getElementById("statusMessage");
-    const tableBody = document.getElementById("resultsTableBody");
+const statusMessage = document.getElementById("statusMessage");
+const tableBody = document.getElementById("resultsTableBody");
+const errorsSection = document.getElementById("batchErrorsSection");
+const errorsBody = document.getElementById("batchErrorsBody");
+const errorCount = document.getElementById("errorCount");
+const skippedSection = document.getElementById("batchSkippedSection");
+const skippedBody = document.getElementById("batchSkippedBody");
+const skippedRowsCount = document.getElementById("skippedRowsCount");
+const downloadButton = document.getElementById("downloadBtn");
 
-    function showStatus(message) {
-        statusMessage.textContent = message;
-        statusMessage.style.display = "block";
+
+function showStatus(message) {
+    statusMessage.textContent = message;
+    statusMessage.style.display = "block";
+}
+
+function formatNumber(value) {
+    return Number(value || 0).toLocaleString("en-IN");
+}
+
+function formatPercentage(value) {
+    return `${Number(value || 0).toFixed(2)}%`;
+}
+
+function getRiskClass(risk) {
+    const value = String(risk || "").toLowerCase();
+
+    if (value === "high") return "badge-high";
+    if (value === "medium") return "badge-medium";
+
+    return "badge-low";
+}
+
+function getFraudClass(isFraud) {
+    return isFraud ? "badge-fraud" : "badge-normal";
+}
+
+function renderResults(results) {
+    tableBody.innerHTML = "";
+
+    if (!results || results.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty-state">
+                    No successful transaction results found.
+                </td>
+            </tr>
+        `;
+        return;
     }
 
-    function formatNumber(value) {
-        return Number(value || 0).toLocaleString("en-IN");
-    }
+    results.forEach(transaction => {
+        const row = document.createElement("tr");
 
-    function formatPercentage(value) {
-        return `${Number(value || 0).toFixed(2)}%`;
-    }
+        const transactionId = transaction.transactionId ?? "N/A";
+        const amount = Number(transaction.amount ?? 0);
+        const isFraud = Boolean(transaction.isFraud);
+        const risk = transaction.riskLevel ?? "LOW";
+        const score = Number(transaction.riskScore ?? 0);
 
-    function getRiskClass(risk) {
-        const value = String(risk || "").toLowerCase();
-
-        if (value === "high") return "badge-high";
-        if (value === "medium") return "badge-medium";
-
-        return "badge-low";
-    }
-
-    function getFraudClass(isFraud) {
-        return isFraud
-            ? "badge-fraud"
-            : "badge-normal";
-    }
-
-    function renderResults(results) {
-        tableBody.innerHTML = "";
-
-        if (!results || results.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="empty-state">
-                        No transaction results found.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        results.forEach(transaction => {
-            const row = document.createElement("tr");
-
-            const transactionId = transaction.transactionId ?? transaction.id ?? "N/A";
-            const amount = Number(transaction.amount ?? 0);
-            const isFraud = Boolean(transaction.isFraud ?? transaction.fraud);
-            const risk = transaction.riskLevel ?? transaction.risk ?? "Low";
-            const score = Number(transaction.riskScore ?? transaction.score ?? 0);
-
-            const cells = [
-                transactionId,
-                `₹${amount.toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })}`,
-                isFraud ? "Fraud" : "Normal",
-                risk,
-                formatPercentage(score)
-            ];
-
-            cells.forEach((value, index) => {
-                const cell = document.createElement("td");
-
-                if (index === 2) {
-                    const badge = document.createElement("span");
-                    badge.className = `badge ${getFraudClass(isFraud)}`;
-                    badge.textContent = value;
-                    cell.appendChild(badge);
-                } else if (index === 3) {
-                    const badge = document.createElement("span");
-                    badge.className = `badge ${getRiskClass(risk)}`;
-                    badge.textContent = value;
-                    cell.appendChild(badge);
-                } else {
-                    cell.textContent = value;
-                }
-
-                row.appendChild(cell);
-            });
-
-            tableBody.appendChild(row);
-        });
-    }
-
-    async function loadBatchResults() {
-        if (!batchId) {
-            showStatus("Batch ID is missing. Open this page with a valid batchId.");
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="empty-state">
-                        No batch selected.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        try {
-            const response = await fetch(
-                `${API_BASE}/batches/${encodeURIComponent(batchId)}`,
-                {
-                    method: "GET",
-                    credentials: "include"
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error("Unable to load batch results.");
-            }
-
-            const data = await response.json();
-
-            // Expected response shape is an assumption pending backend confirmation.
-            const results = data.results || data.transactions || [];
-
-            batchResults = results;
-
-            document.getElementById("totalTransactions").textContent =
-                formatNumber(data.totalTransactions ?? results.length);
-
-            document.getElementById("fraudCount").textContent =
-                formatNumber(data.fraudCount);
-
-            document.getElementById("normalCount").textContent =
-                formatNumber(data.normalCount);
-
-            document.getElementById("fraudPercentage").textContent =
-                formatPercentage(data.fraudPercentage);
-
-            document.getElementById("lowRisk").textContent =
-                formatNumber(data.lowRiskCount);
-
-            document.getElementById("mediumRisk").textContent =
-                formatNumber(data.mediumRiskCount);
-
-            document.getElementById("highRisk").textContent =
-                formatNumber(data.highRiskCount);
-
-            renderResults(batchResults);
-
-        } catch (error) {
-            showStatus(error.message);
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="empty-state">
-                        Could not load batch results.
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    // Search transaction results
-    document.getElementById("searchInput").addEventListener("input", function () {
-        const searchTerm = this.value.toLowerCase();
-
-        const filteredResults = batchResults.filter(transaction => {
-            const id = String(
-                transaction.transactionId ?? transaction.id ?? ""
-            ).toLowerCase();
-
-            return id.includes(searchTerm);
-        });
-
-        renderResults(filteredResults);
-    });
-
-    // Download currently loaded results as CSV
-    document.getElementById("downloadBtn").addEventListener("click", function () {
-        if (!batchResults.length) {
-            showStatus("No results available to download.");
-            return;
-        }
-
-        const headers = [
-            "Transaction ID",
-            "Amount",
-            "Fraud Status",
-            "Risk Level",
-            "Risk Score"
+        const values = [
+            transactionId,
+            `₹${amount.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`,
+            isFraud ? "Fraud" : "Normal",
+            risk,
+            formatPercentage(score)
         ];
 
-        const rows = batchResults.map(transaction => [
-            transaction.transactionId ?? transaction.id ?? "",
-            transaction.amount ?? 0,
-            (transaction.isFraud ?? transaction.fraud) ? "Fraud" : "Normal",
-            transaction.riskLevel ?? transaction.risk ?? "",
-            transaction.riskScore ?? transaction.score ?? ""
-        ]);
+        values.forEach((value, index) => {
+            const cell = document.createElement("td");
 
-        const csvContent = [headers, ...rows]
-            .map(row => row.map(value =>
-                `"${String(value).replace(/"/g, '""')}"`
-            ).join(","))
-            .join("\n");
+            if (index === 2 || index === 3) {
+                const badge = document.createElement("span");
+                badge.className = index === 2
+                    ? `badge ${getFraudClass(isFraud)}`
+                    : `badge ${getRiskClass(risk)}`;
 
-        const blob = new Blob([csvContent], {
-            type: "text/csv;charset=utf-8;"
+                badge.textContent = value;
+                cell.appendChild(badge);
+            } else {
+                cell.textContent = value;
+            }
+
+            row.appendChild(cell);
         });
 
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-
-        link.href = url;
-        link.download = `CreditGuard_Batch_${batchId}.csv`;
-        link.click();
-
-        URL.revokeObjectURL(url);
+        tableBody.appendChild(row);
     });
+}
 
-    loadBatchResults();
+function renderErrors(errors) {
+    errorsBody.innerHTML = "";
+
+    const failedRows = errors || [];
+
+    errorsSection.hidden = failedRows.length === 0;
+    errorCount.textContent = `${failedRows.length} errors`;
+
+    failedRows.forEach(error => {
+        const row = document.createElement("tr");
+
+        const rowNumberCell = document.createElement("td");
+        rowNumberCell.textContent = error.sourceRowNumber ?? "N/A";
+
+        const messageCell = document.createElement("td");
+        messageCell.textContent = error.errorMessage ?? "Processing failed.";
+
+        row.appendChild(rowNumberCell);
+        row.appendChild(messageCell);
+
+        errorsBody.appendChild(row);
+    });
+}
+
+function renderSkippedRows(rows) {
+    skippedBody.innerHTML = "";
+
+    const skipped = rows || [];
+
+    skippedSection.hidden = skipped.length === 0;
+    skippedRowsCount.textContent = `${skipped.length} skipped`;
+
+    skipped.forEach(item => {
+        const row = document.createElement("tr");
+
+        const rowNumberCell = document.createElement("td");
+        rowNumberCell.textContent = item.sourceRowNumber ?? "N/A";
+
+        const messageCell = document.createElement("td");
+        messageCell.textContent = item.message ?? "Duplicate row skipped.";
+
+        row.appendChild(rowNumberCell);
+        row.appendChild(messageCell);
+
+        skippedBody.appendChild(row);
+    });
+}
+
+function updateSummary(data) {
+    document.getElementById("totalTransactions").textContent =
+        formatNumber(data.totalTransactions);
+
+    document.getElementById("fraudCount").textContent =
+        formatNumber(data.fraudCount);
+
+    document.getElementById("normalCount").textContent =
+        formatNumber(data.normalCount);
+
+    document.getElementById("fraudPercentage").textContent =
+        formatPercentage(data.fraudPercentage);
+
+    document.getElementById("lowRisk").textContent =
+        formatNumber(data.lowRiskCount);
+
+    document.getElementById("mediumRisk").textContent =
+        formatNumber(data.mediumRiskCount);
+
+    document.getElementById("highRisk").textContent =
+        formatNumber(data.highRiskCount);
+    
+        document.getElementById("skippedCount").textContent =
+    formatNumber(data.skippedCount??0);
+        
+}
+
+async function loadBatchResults() {
+    if (!batchId) {
+        showStatus("Batch ID is missing. Please open a valid batch.");
+        return;
+    }
+
+    if (polling) return;
+    polling = true;
+
+    try {
+        const responseBody = await CreditGuardAPI.get(
+    `batches/${encodeURIComponent(batchId)}`
+);
+
+// Backend response: { data: { ... } }
+const data = responseBody.data ?? responseBody;
+
+        batchResults = data.results ?? [];
+
+        updateSummary(data);
+        renderResults(batchResults);
+        renderErrors(data.errors ?? []);
+        renderSkippedRows(data.skippedRows ?? []);
+
+        const status = String(data.status || "").toUpperCase();
+
+        if (status === "RECEIVED" || status === "PROCESSING") {
+            showStatus(
+                `Batch ${batchId} is ${status.toLowerCase()}. ` +
+                "Results will refresh automatically."
+            );
+
+            setTimeout(() => {
+                polling = false;
+                loadBatchResults();
+            }, 2000);
+
+            return;
+        }
+
+        if (status === "COMPLETED") {
+    showStatus(
+        `Batch processing completed. ` +
+        `${data.processedRows} processed, ` +
+        `${data.skippedCount ?? 0} duplicates skipped.`
+    );
+} else if (status === "PARTIAL") {
+    showStatus(
+        `Batch partially completed. ` +
+        `${data.processedRows} successful, ` +
+        `${data.errorCount} failed, ` +
+        `${data.skippedCount ?? 0} duplicates skipped.`
+    );
+} else if (status === "FAILED") {
+    showStatus("Batch processing failed. Check the errors below.");
+} else {
+    showStatus(`Batch status: ${status || "UNKNOWN"}`);
+}
+
+    } catch (error) {
+        showStatus(error.message || "Unable to load batch results.");
+    } finally {
+        polling = false;
+    }
+}
+
+// Search transaction results
+document.getElementById("searchInput").addEventListener("input", function () {
+    const searchTerm = this.value.toLowerCase();
+
+    const filteredResults = batchResults.filter(transaction =>
+        String(transaction.transactionId ?? "")
+            .toLowerCase()
+            .includes(searchTerm)
+    );
+
+    renderResults(filteredResults);
+});
+
+// Download official CSV report from backend
+downloadButton.addEventListener("click", async function () {
+    if (!batchId) {
+        showStatus("Batch ID is missing.");
+        return;
+    }
+
+    downloadButton.disabled = true;
+
+    try {
+        await CreditGuardAPI.download(
+    `batches/${encodeURIComponent(batchId)}/report`,
+    `CreditGuard_Batch_${batchId}_report.csv`
+);
+
+    } catch (error) {
+        showStatus(error.message || "Report download failed.");
+    } finally {
+        downloadButton.disabled = false;
+    }
+});
+
+loadBatchResults();
+
 </script>
 
 </body>

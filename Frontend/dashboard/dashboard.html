@@ -182,7 +182,22 @@
 
                 </article>
 
+                <article class="stat-card">
+    <div class="stat-top">
+        <span class="stat-label">
+            Fraud Percentage
+        </span>
 
+        <span class="stat-icon red">%</span>
+    </div>
+
+    <h2 id="fraudPercentage">--</h2>
+
+    <p class="stat-description">
+        Percentage of predicted fraudulent transactions
+    </p>
+
+</article>
                 <article class="stat-card">
 
                     <div class="stat-top">
@@ -330,10 +345,41 @@
                     </div>
 
                 </section>
+                </div>
+      <!-- Currency Summary -->
+<section class="dashboard-card currency-summary">
 
-            </div>
+    <div class="card-header">
+        <div>
+            <h3>Currency Summary</h3>
+            <p>Transaction volume and value grouped by currency</p>
+        </div>
+    </div>
 
+    <div class="table-container">
 
+        <table>
+            <thead>
+                <tr>
+                    <th>Currency</th>
+                    <th>Transactions</th>
+                    <th>Total Amount</th>
+                    <th>Average Amount</th>
+                </tr>
+            </thead>
+
+            <tbody id="currencySummaryBody">
+                <tr>
+                    <td colspan="4" class="empty-state">
+                        Loading currency summary...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</section>
             <!-- Recent Suspicious Transactions -->
             <section class="dashboard-card recent-transactions">
 
@@ -381,7 +427,6 @@
                         </tbody>
 
                     </table>
-
                 </div>
 
             </section>
@@ -481,6 +526,7 @@
 <!-- Dashboard JavaScript -->
 <script src="../shared/js/api.js"></script>
 <script src="../shared/js/session.js"></script>
+<script src="../app.js"></script>
 <script src="dashboard.js"></script>
 
 </body>

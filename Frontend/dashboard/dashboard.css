@@ -642,3 +642,8 @@ tbody tr:hover {
         height: 210px;
     }
 }
+
+/* Currency Summary */
+.currency-summary {
+    margin-bottom: 25px;
+}

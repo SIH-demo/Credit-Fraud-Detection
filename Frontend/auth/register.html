@@ -193,6 +193,34 @@
 
         </form>
 
+
+<form id="otpForm" hidden>
+
+    <div class="form-group">
+        <label for="otp">Email Verification Code</label>
+        <input
+            type="text"
+            id="otp"
+            name="otp"
+            placeholder="Enter 6-digit OTP"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            minlength="6"
+            required
+            autocomplete="one-time-code"
+        >
+    </div>
+
+    <button type="submit" id="verifyOtpButton">
+        Verify Email
+    </button>
+
+    <p class="message" id="otpMessage"></p>
+
+</form>
+
+
         <div class="login-link">
             Already have an account?
             <a href="login.html">Login</a>
@@ -200,72 +228,116 @@
 
     </div>
 
-    <script>
-        const registerForm = document.getElementById("registerForm");
-        const message = document.getElementById("message");
-        const registerButton = document.getElementById("registerButton");
+    <script src="../shared/js/api.js"></script>
+   <script>
+const registerForm = document.getElementById("registerForm");
+const otpForm = document.getElementById("otpForm");
 
-        registerForm.addEventListener("submit", async function (event) {
-            event.preventDefault();
+const message = document.getElementById("message");
+const otpMessage = document.getElementById("otpMessage");
 
-            const fullName = document.getElementById("fullName").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
+const registerButton = document.getElementById("registerButton");
+const verifyOtpButton = document.getElementById("verifyOtpButton");
 
-            message.style.display = "block";
-            message.style.color = "#dc2626";
+let registeredEmail = "";
 
-            if (password.length < 8) {
-                message.textContent = "Password must contain at least 8 characters.";
-                return;
-            }
+function showMessage(element, text, success = false) {
+    element.style.display = "block";
+    element.style.color = success ? "#16a34a" : "#dc2626";
+    element.textContent = text;
+}
 
-            if (password !== confirmPassword) {
-                message.textContent = "Passwords do not match.";
-                return;
-            }
+// Registration
+registerForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
 
-            registerButton.disabled = true;
-            registerButton.textContent = "Creating Account...";
+    const fullName = document.getElementById("fullName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
 
-            try {
-                const response = await fetch("/api/v1/auth/register", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        fullName: fullName,
-                        email: email,
-                        password: password
-                    })
-                });
+    if (password.length < 8) {
+        showMessage(message, "Password must contain at least 8 characters.");
+        return;
+    }
 
-                const data = await response.json().catch(() => ({}));
+    if (password !== confirmPassword) {
+        showMessage(message, "Passwords do not match.");
+        return;
+    }
 
-                if (!response.ok) {
-                    throw new Error(data.message || "Registration failed.");
-                }
+    registerButton.disabled = true;
+    registerButton.textContent = "Creating Account...";
 
-                message.style.color = "#16a34a";
-                message.textContent = "Registration successful! Please login.";
-
-                registerForm.reset();
-
-                setTimeout(() => {
-                    window.location.href = "login.html";
-                }, 1500);
-
-            } catch (error) {
-                message.style.color = "#dc2626";
-                message.textContent = error.message || "Unable to connect to server.";
-            } finally {
-                registerButton.disabled = false;
-                registerButton.textContent = "Create Account";
-            }
+    try {
+        const data = await CreditGuardAPI.post("auth/register", {
+            fullName,
+            email,
+            password
         });
-    </script>
+
+        registeredEmail = email;
+
+        showMessage(
+            message,
+            data.message || "OTP sent. Please check your email.",
+            true
+        );
+
+        registerForm.hidden = true;
+        otpForm.hidden = false;
+
+    } catch (error) {
+        showMessage(message, error.message || "Registration failed.");
+    } finally {
+        registerButton.disabled = false;
+        registerButton.textContent = "Create Account";
+    }
+});
+
+// OTP verification
+otpForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const otp = document.getElementById("otp").value.trim();
+
+    if (!/^[0-9]{6}$/.test(otp)) {
+        showMessage(otpMessage, "Please enter a valid 6-digit OTP.");
+        return;
+    }
+
+    verifyOtpButton.disabled = true;
+    verifyOtpButton.textContent = "Verifying...";
+
+    try {
+        const data = await CreditGuardAPI.post("auth/verify-otp", {
+            email: registeredEmail,
+            otp
+        });
+
+        showMessage(
+            otpMessage,
+            data.message || "Email verified successfully.",
+            true
+        );
+
+        otpForm.hidden = true;
+
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1500);
+
+    } catch (error) {
+        showMessage(
+            otpMessage,
+            error.message || "OTP verification failed."
+        );
+    } finally {
+        verifyOtpButton.disabled = false;
+        verifyOtpButton.textContent = "Verify Email";
+    }
+});
+</script>
 
 </body>
 </html>

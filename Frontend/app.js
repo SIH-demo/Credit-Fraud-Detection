@@ -9,10 +9,11 @@
 
     const CreditGuardApp = {
         init() {
-            this.initLogout();
-            this.initGlobalEvents();
-            this.initActiveNavigation();
-        },
+    this.initLogout();
+    this.initGlobalEvents();
+    this.initAuthenticationGuard();
+    this.initActiveNavigation();
+},
 
         // Logout button handling
         initLogout() {
@@ -36,7 +37,7 @@
         // Global application events
         initGlobalEvents() {
             // Session expired / unauthorized response
-            document.addEventListener(
+            window.addEventListener(
                 "creditguard:unauthorized",
                 () => {
                     if (window.CreditGuardSession) {
@@ -63,6 +64,46 @@
                 );
             });
         },
+
+        // Verify backend authentication when a protected page loads
+
+async initAuthenticationGuard() {
+    if (!window.CreditGuardSession) {
+        window.location.replace("/auth/login.html");
+        return;
+    }
+
+    try {
+        const authenticated =
+            await window.CreditGuardSession.checkAuthentication();
+
+        if (!authenticated) {
+            window.CreditGuardSession.clearLocalSession();
+            window.location.replace("/auth/login.html");
+            return;
+        }
+
+        // Settings and Users pages are ADMIN-only.
+        const currentPath = window.location.pathname;
+
+        const isAdminPage =
+            /\/settings\/(settings|users)\.html$/i.test(currentPath);
+
+        if (
+            isAdminPage &&
+            !window.CreditGuardSession.hasRole("ADMIN")
+        ) {
+            window.location.replace("/dashboard/dashboard.html");
+        }
+
+    } catch (error) {
+        console.error(
+            "Unable to verify authentication:",
+            error
+        );
+    }
+},
+
 
         // Highlight current page in sidebar
         initActiveNavigation() {
